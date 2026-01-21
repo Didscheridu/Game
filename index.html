@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TradeSim: Final Production</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;600;800&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root { --bg-dark: #020617; --glass-surface: rgba(15, 23, 42, 0.9); --glass-border: rgba(255, 255, 255, 0.1); --neon-cyan: #06b6d4; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-dark); color: #e2e8f0; background-image: radial-gradient(circle at 50% 50%, rgba(6, 182, 212, 0.05) 0%, transparent 60%); overflow-x: hidden; }
+        h1, h2, h3, .font-display { font-family: 'Oswald', sans-serif; letter-spacing: 0.05em; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+        
+        .glass-panel { background: var(--glass-surface); backdrop-filter: blur(16px); border: 1px solid var(--glass-border); box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
+        .glass-card { background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255, 255, 255, 0.05); transition: all 0.2s; cursor: pointer; }
+        .glass-card:hover { transform: translateY(-4px); border-color: var(--neon-cyan); box-shadow: 0 10px 30px -10px rgba(6, 182, 212, 0.2); }
+        
+        .hidden-view { display: none !important; }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .btn-primary { background: linear-gradient(135deg, #0891b2 0%, #2563eb 100%); color: white; font-weight: 700; padding: 0.5rem 1rem; border-radius: 0.5rem; transition: 0.2s; font-family: 'Oswald', sans-serif; text-transform: uppercase; }
+        .btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
+        .btn-danger { background: linear-gradient(135deg, #be123c 0%, #e11d48 100%); color: white; font-weight: 700; padding: 0.5rem 1rem; border-radius: 0.5rem; transition: 0.2s; font-family: 'Oswald', sans-serif; text-transform: uppercase; }
+        
+        .input-std { background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; color: white; padding: 0.75rem; border-radius: 0.5rem; width: 100%; font-family: 'JetBrains Mono', monospace; }
+        .input-std:focus { border-color: var(--neon-cyan); outline: none; }
+
+        .prod-bar { width: 100%; height: 6px; background: #1e293b; border-radius: 3px; overflow: hidden; }
+        .prod-fill { height: 100%; background: linear-gradient(90deg, #06b6d4, #3b82f6); width: 0%; transition: width 0.2s linear; }
+
+        /* Minigames */
+        .hack-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-width: 300px; margin: 0 auto; }
+        .hack-btn { height: 60px; background: #1e293b; border: 2px solid #334155; border-radius: 8px; font-size: 1.5rem; color: #64748b; transition: 0.1s; }
+        .hack-btn.active { background: #0ea5e9; border-color: #38bdf8; color: white; box-shadow: 0 0 15px #0ea5e9; }
+        .hack-btn.success { background: #10b981; border-color: #34d399; }
+        .hack-btn.fail { background: #ef4444; border-color: #f87171; }
+        .reflex-track { height: 40px; background: #0f172a; border-radius: 20px; position: relative; overflow: hidden; border: 2px solid #334155; }
+        .reflex-zone { position: absolute; height: 100%; background: rgba(16, 185, 129, 0.3); border-left: 2px solid #10b981; border-right: 2px solid #10b981; }
+        .reflex-cursor { position: absolute; top: 0; height: 100%; width: 4px; background: white; box-shadow: 0 0 10px white; }
+    </style>
+</head>
+<body>
+
+    <!-- AUTH -->
+    <div id="auth-screen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950 bg-[url('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80')] bg-cover bg-center">
+        <div class="absolute inset-0 bg-slate-950/90 backdrop-blur-sm"></div>
+        <div class="glass-panel p-10 rounded-2xl max-w-md w-full relative z-10 text-center border-t-4 border-cyan-500 shadow-2xl">
+            <h1 class="text-4xl font-display font-bold text-white mb-2">ACCESS CONTROL</h1>
+            <p class="text-slate-400 text-sm mb-8 font-mono">Identifikation erforderlich.</p>
+            <input type="text" id="login-name" class="input-std text-center uppercase tracking-widest text-lg text-cyan-300 mb-4" placeholder="CODENAME">
+            <input type="password" id="login-code" class="input-std text-center tracking-[0.5em] text-lg mb-6" placeholder="••••">
+            <button onclick="App.login()" class="btn-primary w-full py-3 text-lg shadow-lg shadow-cyan-500/20">LOGIN</button>
+            <p id="login-status" class="mt-4 text-xs font-mono h-4 text-rose-400"></p>
+        </div>
+    </div>
+
+    <!-- APP -->
+    <div id="app-container" class="hidden min-h-screen flex flex-col">
+        
+        <!-- NAV -->
+        <nav class="h-16 border-b border-slate-800 bg-slate-950/90 backdrop-blur-xl sticky top-0 z-40">
+            <div class="max-w-7xl mx-auto h-full px-4 flex justify-between items-center">
+                <div class="flex items-center gap-3 cursor-pointer" onclick="App.nav('dashboard')">
+                    <i class="fa-solid fa-layer-group text-cyan-500 text-xl"></i>
+                    <span class="font-display font-bold text-xl text-white">TRADE<span class="text-slate-600">SIM</span></span>
+                </div>
+                <div class="flex items-center gap-6">
+                    <div class="hidden md:block text-right"><div class="text-[10px] text-slate-500 font-bold uppercase">ID</div><div id="nav-id" class="font-mono text-xs text-cyan-400">---</div></div>
+                    <div class="text-right border-l border-slate-800 pl-6"><div class="text-[10px] text-slate-500 font-bold uppercase">Cash</div><div id="nav-cash" class="font-mono text-lg font-bold text-white">0 €</div></div>
+                    
+                    <!-- ADMIN BTN -->
+                    <button id="btn-admin" onclick="App.admin.open()" class="hidden w-8 h-8 rounded bg-red-900/20 text-red-500 border border-red-900 hover:bg-red-600 hover:text-white transition flex items-center justify-center"><i class="fa-solid fa-crown"></i></button>
+                    
+                    <button onclick="location.reload()" class="text-slate-500 hover:text-white"><i class="fa-solid fa-power-off"></i></button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- MAIN -->
+        <main class="flex-1 max-w-7xl w-full mx-auto p-4 pb-24">
+            
+            <!-- DASHBOARD -->
+            <div id="view-dashboard" class="view-section animate-fade-in">
+                <header class="text-center py-12">
+                    <h1 class="text-5xl font-display font-bold text-white mb-2">KOMMANDOZENTRALE</h1>
+                    <p class="text-slate-400 font-mono text-sm">Status: Online</p>
+                </header>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                    <div onclick="App.nav('stocks')" class="glass-card rounded-xl p-6 h-48 flex flex-col justify-end group"><i class="fa-solid fa-chart-line text-4xl text-blue-500 mb-2"></i><h3 class="text-lg font-bold text-white">Aktien</h3></div>
+                    <div onclick="App.nav('realestate')" class="glass-card rounded-xl p-6 h-48 flex flex-col justify-end group"><i class="fa-solid fa-city text-4xl text-amber-500 mb-2"></i><h3 class="text-lg font-bold text-white">Immobilien</h3></div>
+                    <div onclick="App.nav('heist')" class="glass-card rounded-xl p-6 h-48 flex flex-col justify-end group border-red-900/30"><i class="fa-solid fa-mask text-4xl text-red-500 mb-2"></i><h3 class="text-lg font-bold text-white">Heist</h3></div>
+                    <div onclick="App.nav('company')" class="glass-card rounded-xl p-6 h-48 flex flex-col justify-end group border-cyan-500/30"><i class="fa-solid fa-industry text-4xl text-cyan-500 mb-2"></i><h3 class="text-lg font-bold text-white">Firma</h3></div>
+                    <div onclick="App.nav('auctions')" class="glass-card rounded-xl p-6 h-48 flex flex-col justify-end group"><i class="fa-solid fa-gavel text-4xl text-purple-500 mb-2"></i><h3 class="text-lg font-bold text-white">Auktion</h3></div>
+                </div>
+            </div>
+
+            <!-- COMPANY -->
+            <div id="view-company" class="view-section hidden-view animate-fade-in">
+                <button onclick="App.nav('dashboard')" class="text-slate-400 hover:text-white text-sm font-bold mb-4"><i class="fa-solid fa-arrow-left"></i> ZURÜCK</button>
+                
+                <div id="comp-setup" class="hidden glass-panel p-8 rounded-2xl max-w-md mx-auto text-center mt-10">
+                    <h2 class="text-2xl font-bold text-white mb-4">Firmengründung</h2>
+                    <input id="comp-name-input" type="text" class="input-std mb-4 text-center" placeholder="Firmenname">
+                    <button onclick="App.systems.company.create()" class="btn-primary w-full">Starten (Kostenlos)</button>
+                </div>
+
+                <div id="comp-dash" class="hidden space-y-6">
+                    <!-- Stats Header -->
+                    <div class="glass-panel p-6 rounded-2xl flex justify-between items-center border border-cyan-900/50">
+                        <div>
+                            <h2 id="comp-name" class="text-3xl font-display font-bold text-white">CORP</h2>
+                            <div class="text-xs text-slate-400 font-mono mt-1">PERSONAL: <span id="comp-staff-total" class="text-white">0</span> | LAGER: <span id="comp-stock-total" class="text-white">0</span></div>
+                        </div>
+                        <div class="text-right">
+                             <div class="text-xs text-slate-500 font-bold uppercase">Rohstoffe</div>
+                             <div id="comp-resources" class="text-xl font-mono font-bold text-emerald-400">0</div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        
+                        <!-- 1. RESSOURCEN & PERSONAL -->
+                        <div class="glass-panel p-6 rounded-2xl flex flex-col h-[600px] border border-slate-700/50">
+                            <h3 class="font-bold text-slate-300 text-xs uppercase mb-4 pb-2 border-b border-slate-700">1. Einkauf & Personal</h3>
+                            
+                            <!-- Resources -->
+                            <div class="mb-6">
+                                <h4 class="text-[10px] text-cyan-400 font-bold uppercase mb-2">Rohstoffmarkt</h4>
+                                <div id="resource-market" class="space-y-2 max-h-[200px] overflow-y-auto custom-scrollbar pr-2"></div>
+                            </div>
+
+                            <!-- Hiring -->
+                            <div class="flex-1">
+                                <h4 class="text-[10px] text-blue-400 font-bold uppercase mb-2">Personalbüro</h4>
+                                <div class="bg-slate-900/50 p-3 rounded-lg border border-slate-800 mb-2">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm font-bold text-white">Produktions-Arbeiter</span>
+                                        <span class="text-xs text-slate-500">500€</span>
+                                    </div>
+                                    <div class="flex justify-between items-center mt-2">
+                                        <span class="text-xs text-slate-400">Verfügbar: <span id="staff-idle" class="text-white font-mono font-bold">0</span></span>
+                                        <button onclick="App.systems.company.hire()" class="bg-blue-600 hover:bg-blue-500 text-white text-xs px-3 py-1 rounded font-bold">+ Einstellen</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 2. FERTIGUNG -->
+                        <div class="glass-panel p-6 rounded-2xl flex flex-col h-[600px] border border-slate-700/50">
+                            <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-700">
+                                <h3 class="font-bold text-slate-300 text-xs uppercase">2. Fertigung</h3>
+                                <button onclick="document.getElementById('prod-modal').classList.remove('hidden')" class="text-[10px] bg-cyan-600 hover:bg-cyan-500 text-white px-2 py-1 rounded font-bold">+ NEUE LINIE</button>
+                            </div>
+                            <div id="prod-lines" class="space-y-3 flex-1 overflow-y-auto custom-scrollbar pr-2">
+                                <div class="text-center text-slate-600 text-xs mt-10">Keine Produktion aktiv.</div>
+                            </div>
+                        </div>
+
+                        <!-- 3. VERKAUF -->
+                        <div class="glass-panel p-6 rounded-2xl flex flex-col h-[600px] border border-slate-700/50">
+                            <h3 class="font-bold text-slate-300 text-xs uppercase mb-4 pb-2 border-b border-slate-700">3. Lager & Verkauf</h3>
+                            <div id="warehouse-list" class="space-y-2 flex-1 overflow-y-auto custom-scrollbar pr-2"></div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- OTHER VIEWS (Integrated) -->
+            <div id="view-stocks" class="view-section hidden-view animate-fade-in">
+                <button onclick="App.nav('dashboard')" class="text-slate-400 hover:text-white text-sm font-bold mb-4">ZURÜCK</button>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="glass-panel p-6 rounded-2xl"><div id="stock-list" class="space-y-2"></div></div>
+                    <div class="glass-panel p-6 rounded-2xl">
+                        <h2 id="chart-title" class="text-2xl font-bold text-white mb-2">---</h2>
+                        <div id="chart-price" class="text-4xl font-mono text-cyan-400 mb-6">0.00</div>
+                        <div class="h-64 bg-slate-900/50 rounded-lg p-2 mb-4"><canvas id="stockChart"></canvas></div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <button onclick="App.systems.stocks.trade('buy')" class="btn-primary bg-emerald-600">KAUFEN</button>
+                            <button onclick="App.systems.stocks.trade('sell')" class="btn-danger">VERKAUFEN</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-realestate" class="view-section hidden-view animate-fade-in">
+                <button onclick="App.nav('dashboard')" class="text-slate-400 hover:text-white text-sm font-bold mb-4">ZURÜCK</button>
+                <div id="estate-list" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+            </div>
+
+            <div id="view-auctions" class="view-section hidden-view animate-fade-in text-center">
+                <button onclick="App.nav('dashboard')" class="text-slate-400 hover:text-white text-sm font-bold mb-4">ZURÜCK</button>
+                <div class="glass-panel p-10 rounded-2xl max-w-xl mx-auto">
+                    <h2 class="text-3xl font-bold text-white mb-2">AUKTIONSHAUS</h2>
+                    <div class="bg-slate-900 p-6 rounded-xl my-6 border border-purple-500/30">
+                        <div id="auc-item" class="text-xl text-white font-bold">---</div>
+                        <div id="auc-price" class="text-3xl text-emerald-400 font-mono mt-2">0 €</div>
+                        <div id="auc-bidder" class="text-xs text-purple-400 mt-1 uppercase font-bold">Keine Gebote</div>
+                        <div id="auc-timer" class="text-xs text-slate-500 mt-4">Warte...</div>
+                    </div>
+                    <button onclick="App.systems.auctions.bid()" class="btn-primary w-full bg-purple-600 hover:bg-purple-500">BIETEN (+5%)</button>
+                </div>
+            </div>
+
+            <!-- HEIST SYSTEM -->
+            <div id="view-heist" class="view-section hidden-view animate-fade-in">
+                <button onclick="App.nav('dashboard')" class="text-slate-400 hover:text-white text-sm font-bold mb-4">ZURÜCK</button>
+                <div id="heist-menu" class="grid grid-cols-2 gap-6 max-w-2xl mx-auto">
+                    <div onclick="App.systems.heist.start('small')" class="glass-card p-6 rounded-xl text-center">
+                        <h3 class="font-bold text-white text-xl">Bank</h3>
+                        <p class="text-emerald-400 font-mono">1.000.000 €</p>
+                    </div>
+                    <div onclick="App.systems.heist.start('big')" class="glass-card p-6 rounded-xl text-center border-red-500/30">
+                        <h3 class="font-bold text-white text-xl">Tresor</h3>
+                        <p class="text-emerald-400 font-mono">10.000.000 €</p>
+                    </div>
+                </div>
+                
+                <!-- HEIST GAME UI -->
+                <div id="heist-interface" class="hidden glass-panel p-8 rounded-2xl max-w-lg mx-auto text-center border-2 border-red-500/50">
+                    <div class="w-full bg-slate-900 h-2 rounded-full mb-4 overflow-hidden"><div id="heist-timer" class="bg-red-500 h-full w-full transition-all duration-1000 linear"></div></div>
+                    <h2 class="text-2xl font-bold text-white mb-2" id="heist-task">AUFGABE</h2>
+                    
+                    <!-- Memory Game -->
+                    <div id="game-memory" class="hidden">
+                        <div class="hack-grid" id="memory-grid"></div>
+                        <p class="text-xs text-slate-500 mt-2">Merke dir das Muster!</p>
+                    </div>
+                    
+                    <!-- Reflex Game -->
+                    <div id="game-reflex" class="hidden">
+                         <div class="reflex-track mb-6">
+                            <div id="reflex-target" class="reflex-zone" style="left: 70%; width: 20%;"></div>
+                            <div id="reflex-cursor" class="reflex-cursor" style="left: 0%;"></div>
+                        </div>
+                        <button onmousedown="App.systems.heist.checkReflex()" class="btn-danger w-full py-4 text-xl tracking-widest shadow-lg">STOPP</button>
+                    </div>
+
+                     <!-- Math Game -->
+                    <div id="game-math" class="hidden">
+                        <div class="text-5xl font-mono text-white mb-8 font-bold" id="math-problem"></div>
+                        <div class="grid grid-cols-2 gap-4" id="math-options"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ADMIN PANEL -->
+            <div id="admin-panel" class="hidden fixed inset-0 z-[60] bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
+                <div class="glass-panel w-full max-w-2xl rounded-2xl p-6 relative border-red-600 border-2">
+                    <button onclick="document.getElementById('admin-panel').classList.add('hidden')" class="absolute top-4 right-4 text-white"><i class="fa-solid fa-times"></i></button>
+                    <h2 class="text-2xl font-bold text-red-500 mb-6">ADMIN TERMINAL</h2>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <h3 class="text-xs font-bold text-slate-400 uppercase">Spieler Management</h3>
+                            <div id="admin-users" class="space-y-1"></div>
+                        </div>
+                        <div class="space-y-2">
+                            <h3 class="text-xs font-bold text-slate-400 uppercase">Markt Eingriff</h3>
+                            <div id="admin-stocks" class="space-y-1"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- MODAL: PRODUCTION -->
+    <div id="prod-modal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="glass-panel p-6 rounded-2xl w-full max-w-sm">
+            <h3 class="text-xl font-bold text-white mb-4">Produktionslinie</h3>
+            <input id="new-prod-name" class="input-std mb-3" placeholder="Produktname (z.B. Handy)">
+            <label class="text-xs text-slate-400 block mb-1">Benötigtes Material wählen:</label>
+            <select id="new-prod-mat" class="input-std mb-3 bg-slate-900">
+                <!-- JS Filled -->
+            </select>
+            <input id="new-prod-qty" type="number" class="input-std mb-3" placeholder="Menge Material" value="1">
+            <div class="flex justify-between text-xs text-slate-400 mb-3">
+                <span>Materialkosten: <span id="calc-cost" class="text-white font-mono">0 €</span></span>
+                <span>Max. Preis: <span id="calc-max" class="text-cyan-400 font-mono">0 €</span></span>
+            </div>
+            <input id="new-prod-price" type="number" class="input-std mb-4 text-right font-mono text-emerald-400 font-bold" placeholder="Verkaufspreis">
+            <label class="text-xs text-slate-400 block mb-1">Arbeiter zuweisen:</label>
+            <input id="new-prod-workers" type="number" class="input-std mb-4" placeholder="Anzahl Arbeiter" value="1">
+            
+            <div class="flex gap-2">
+                <button onclick="document.getElementById('prod-modal').classList.add('hidden')" class="w-1/2 py-2 rounded bg-slate-700 text-white">Abbrechen</button>
+                <button onclick="App.systems.company.startLine()" class="w-1/2 btn-primary">Starten</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container" class="fixed bottom-8 right-8 z-[100] flex flex-col gap-2 pointer-events-none"></div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
+        import { getAuth, signInAnonymously } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+        import { getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot, collection, getDocs } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+
+        // --- INIT ---
+        let db, auth, useCloud = false, appId = 'default';
+        const CONFIG = {
+             apiKey: "AIzaSyCRlJkg5cjTArV6_r_AbAouro6C5BKfhW8",
+             authDomain: "aktien-a5ff6.firebaseapp.com",
+             projectId: "aktien-a5ff6",
+             storageBucket: "aktien-a5ff6.firebasestorage.app",
+             messagingSenderId: "314450483061",
+             appId: "1:314450483061:web:4395f3b5ae4796b723a53c",
+             measurementId: "G-JGX3Z3QQJD"
+        };
+        
+        try {
+            const app = initializeApp(CONFIG);
+            auth = getAuth(app);
+            db = getFirestore(app);
+            useCloud = true;
+        } catch(e) { console.log("Offline Mode"); }
+
+        // --- DATA ---
+        const USERS = { 'kayden':'1234', 'tim':'1234', 'florian':'1234', 'jakob':'1234', 'vincent':'1234', 'joshua':'1234' };
+        const STOCKS = [{id:'NEBU',n:'Nebula AI',p:150},{id:'AUTO',n:'Future Motors',p:85},{id:'BIO',n:'Apex Pharma',p:240},{id:'BANK',n:'Global Bank',p:45}];
+        const ESTATES = [{id:'APT',n:'Appartement',c:50000,r:400},{id:'HOUSE',n:'Haus',c:250000,r:1500},{id:'VILLA',n:'Villa',c:1000000,r:8000}];
+        const MATERIALS = { 'Eisen':{c:5}, 'Gold':{c:1200}, 'Plastik':{c:2}, 'Holz':{c:4}, 'Chips':{c:150} };
+        const AUCTION_ITEMS = [{n:'Uhr',v:5000},{n:'Auto',v:50000},{n:'Diamant',v:150000}];
+
+        // --- APP ---
+        const App = {
+            state: { cash:50000, stocks:{}, estates:[], company:null, inventory:[] },
+            market: {}, user: null, chart: null, selectedStockId: null,
+            auction: { item: null, bid: 0, bidder: null, end: 0 },
+            
+            // Heist State
+            heist: { active: false, stage: 0, type: '', timer: null, pos: 0, dir: 1, sequence: [], userSeq: [] },
+
+            async init() {
+                if(useCloud) await signInAnonymously(auth).catch(e=>console.log(e));
+                STOCKS.forEach(s => this.market[s.id] = {p:s.p, h:Array(20).fill(s.p)});
+                
+                // Pre-fill modal
+                const sel = document.getElementById('new-prod-mat');
+                Object.keys(MATERIALS).forEach(k => { sel.innerHTML += `<option value="${k}">${k} (${MATERIALS[k].c}€)</option>`; });
+                
+                // Cost Calculator
+                sel.addEventListener('change', this.updateCalc);
+                document.getElementById('new-prod-qty').addEventListener('input', this.updateCalc);
+
+                setInterval(()=>this.tick(), 1000);
+            },
+            
+            updateCalc() {
+                const mat = document.getElementById('new-prod-mat').value;
+                const qty = parseInt(document.getElementById('new-prod-qty').value)||0;
+                const cost = MATERIALS[mat].c * qty;
+                document.getElementById('calc-cost').innerText = App.fmt(cost);
+                document.getElementById('calc-max').innerText = App.fmt(cost * 1.5);
+            },
+
+            async login() {
+                const n = document.getElementById('login-name').value.trim().toLowerCase();
+                const c = document.getElementById('login-code').value.trim();
+                
+                if(!USERS[n]) return alert("Unbekannter User");
+                if(USERS[n] !== c) return alert("Falscher Code");
+
+                this.user = n;
+                document.getElementById('auth-screen').classList.add('hidden');
+                document.getElementById('app-container').classList.remove('hidden');
+                document.getElementById('nav-id').innerText = n.toUpperCase();
+
+                if(n === 'kayden') document.getElementById('btn-admin').classList.remove('hidden');
+
+                if(useCloud) {
+                    const ref = doc(db, 'artifacts', appId, 'public', 'data', 'users', n);
+                    const snap = await getDoc(ref);
+                    if(snap.exists()) this.state = snap.data();
+                    
+                    // Listeners
+                    onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'market', 'global'), s=>{
+                        if(s.exists()) {
+                            const d = s.data();
+                            STOCKS.forEach(def => { if(d[def.id]) { this.market[def.id].p = d[def.id]; this.market[def.id].h.push(d[def.id]); } });
+                            if(this.view==='stocks') this.renderStocks();
+                        }
+                    });
+                    
+                    onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'auction', 'active'), s=>{
+                        if(s.exists()) {
+                            const d = s.data();
+                            this.auction = d;
+                            if(this.view==='auctions') this.renderAuction();
+                        }
+                    });
+                } else {
+                    const s = localStorage.getItem('ts_'+n);
+                    if(s) this.state = JSON.parse(s);
+                    // Local Auction Sim
+                    setInterval(()=>{
+                        if(Date.now() > this.auction.end + 5000) {
+                            const t = AUCTION_ITEMS[Math.floor(Math.random()*AUCTION_ITEMS.length)];
+                            this.auction = { item:t.n, bid: t.v*0.5, end: Date.now()+60000, bidder:'System' };
+                        }
+                    }, 5000);
+                }
+
+                this.nav('dashboard');
+                this.updateUI();
+            },
+
+            tick() {
+                if(!this.user) return;
+                
+                // Market Sim (Local fallback or interp)
+                if(!useCloud) {
+                    STOCKS.forEach(s => {
+                        const m = this.market[s.id];
+                        m.p = Math.max(1, m.p * (1 + (Math.random()-0.5)*0.05));
+                        m.h.push(m.p); if(m.h.length>20) m.h.shift();
+                    });
+                    if(this.view==='stocks') this.renderStocks();
+                }
+
+                // Company Tick
+                if(this.state.company) {
+                    const c = this.state.company;
+                    // Production
+                    c.lines.forEach(l => {
+                        if(l.workers > 0 && !l.paused) {
+                            l.prog += l.workers * 2;
+                            if(l.prog >= 100) {
+                                l.prog = 0;
+                                const s = c.stock.find(x=>x.n===l.n);
+                                if(s) s.q++; else c.stock.push({n:l.n, p:l.sell, q:1});
+                                this.toast("Fertig", l.n);
+                                
+                                // Auto Re-Buy
+                                if(this.state.cash >= l.cost) { this.state.cash -= l.cost; }
+                                else { l.paused = true; this.toast("Stopp", "Kein Geld für "+l.n); }
+                            }
+                        }
+                    });
+                }
+                
+                // Auction Tick
+                if(this.view==='auctions') this.renderAuction();
+
+                this.save();
+                this.updateUI();
+            },
+
+            save() {
+                if(useCloud) setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', this.user), this.state);
+                localStorage.setItem('ts_'+this.user, JSON.stringify(this.state));
+            },
+
+            nav(v) {
+                this.view = v;
+                document.querySelectorAll('.view-section').forEach(e=>e.classList.add('hidden-view'));
+                document.getElementById('view-'+v).classList.remove('hidden-view');
+                if(v==='company') this.renderCompany();
+                if(v==='stocks') this.renderStocks();
+                if(v==='realestate') this.renderEstates();
+                if(v==='auctions') this.renderAuction();
+                if(v==='heist') { document.getElementById('heist-menu').classList.remove('hidden'); document.getElementById('heist-game').classList.add('hidden'); }
+            },
+
+            // --- ADMIN ---
+            admin: {
+                open() {
+                    document.getElementById('admin-panel').classList.remove('hidden');
+                    this.loadUsers();
+                    this.loadStocks();
+                },
+                async loadUsers() {
+                    const l = document.getElementById('admin-users'); l.innerHTML = 'Lade...';
+                    if(!useCloud) { l.innerHTML="Nur Online verfügbar"; return; }
+                    let h = '';
+                    for(let u of Object.keys(USERS)) {
+                        h += `<div class="flex justify-between bg-slate-800 p-2 rounded mb-1"><span>${u}</span><div class="flex gap-2"><button onclick="App.admin.gift('${u}', 100000)" class="text-green-400">+100k</button><button onclick="App.admin.ban('${u}')" class="text-red-500">BAN</button></div></div>`;
+                    }
+                    l.innerHTML = h;
+                },
+                loadStocks() {
+                    const l = document.getElementById('admin-stocks');
+                    l.innerHTML = STOCKS.map(s => `<div class="flex justify-between bg-slate-800 p-2 rounded mb-1"><span>${s.n}</span><button onclick="App.admin.setStock('${s.id}')" class="text-cyan-400">Set Price</button></div>`).join('');
+                },
+                async gift(u, amt) {
+                    const ref = doc(db, 'artifacts', appId, 'public', 'data', 'users', u);
+                    const s = await getDoc(ref);
+                    if(s.exists()) {
+                        const d = s.data(); d.cash += amt;
+                        await setDoc(ref, d);
+                        alert("Geld gesendet.");
+                    }
+                },
+                async ban(u) {
+                    if(confirm("Bannen?")) {
+                        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', u), { banned: true });
+                    }
+                },
+                async setStock(id) {
+                    const p = prompt("Neuer Preis:");
+                    if(p) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'market', 'global'), { [id]: parseFloat(p) });
+                }
+            },
+
+            // --- SYSTEMS ---
+            systems: {
+                company: {
+                    create() {
+                        const n = document.getElementById('comp-name-input').value;
+                        if(n) { App.state.company = { name:n, staff:0, lines:[], stock:[], resources:{} }; App.renderCompany(); }
+                    },
+                    buyResource(mat) {
+                        const cost = MATERIALS[mat].c * 10;
+                        if(App.state.cash >= cost) {
+                            App.state.cash -= cost;
+                            if(!App.state.company.resources[mat]) App.state.company.resources[mat] = 0;
+                            App.state.company.resources[mat] += 10;
+                            App.renderCompany();
+                        } else App.toast("Fehler", "Zu wenig Geld");
+                    },
+                    hire() {
+                        if(App.state.cash >= 500) { App.state.cash -= 500; App.state.company.staff++; App.renderCompany(); }
+                    },
+                    startLine() {
+                        const n = document.getElementById('new-prod-name').value;
+                        const mat = document.getElementById('new-prod-mat').value;
+                        const qty = parseInt(document.getElementById('new-prod-qty').value);
+                        const p = parseFloat(document.getElementById('new-prod-price').value);
+                        const workers = parseInt(document.getElementById('new-prod-workers').value);
+
+                        const cost = MATERIALS[mat].c * qty;
+                        
+                        if(p > cost * 1.5) return App.toast("Fehler", "Preis max 150% der Kosten!");
+                        if((App.state.company.resources[mat]||0) < qty) return App.toast("Fehler", "Nicht genug Rohstoffe!");
+                        if(App.state.company.staff < App.systems.company.getAssigned() + workers) return App.toast("Fehler", "Zu wenig Mitarbeiter!");
+
+                        if(App.state.cash >= cost) {
+                            App.state.cash -= cost;
+                            App.state.company.resources[mat] -= qty;
+                            App.state.company.lines.push({ n, mat, qty, sell:p, cost, prog:0, workers, paused:false });
+                            document.getElementById('prod-modal').classList.add('hidden');
+                            App.renderCompany();
+                        } else App.toast("Fehler", "Kein Geld");
+                    },
+                    getAssigned() {
+                        return App.state.company.lines.reduce((a,l) => a + l.workers, 0);
+                    },
+                    sell(idx) {
+                        const s = App.state.company.stock[idx];
+                        if(s.q > 0) {
+                            s.q--;
+                            App.state.cash += s.p;
+                            App.renderCompany();
+                        }
+                    }
+                },
+                stocks: {
+                    trade(mode) {
+                        if(!App.selectedStockId) return;
+                        const s = App.selectedStockId;
+                        const p = App.market[s].p;
+                        const q = prompt("Menge?");
+                        if(q>0) {
+                            if(mode==='buy' && App.state.cash>=p*q) { App.state.cash-=p*q; if(!App.state.stocks[s])App.state.stocks[s]=0; App.state.stocks[s]+=parseInt(q); }
+                            else if(mode==='sell' && App.state.stocks[s]>=q) { App.state.cash+=p*q; App.state.stocks[s]-=q; }
+                            App.renderStocks();
+                        }
+                    }
+                },
+                auctions: {
+                    bid() {
+                        const next = Math.ceil(App.auction.bid * 1.05);
+                        if(App.state.cash >= next) {
+                            App.state.cash -= next;
+                            if(useCloud) updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'auction', 'active'), { bid:next, bidder:App.user, end: Date.now()+30000 });
+                            else { App.auction.bid=next; App.auction.bidder='Du'; App.auction.end += 5000; }
+                        } else App.toast("Fehler", "Zu wenig Geld");
+                    }
+                },
+                heist: {
+                    start(type) {
+                        document.getElementById('heist-menu').classList.add('hidden');
+                        document.getElementById('heist-game').classList.remove('hidden');
+                        App.heist.active = true;
+                        App.heist.type = type;
+                        this.runStage(1);
+                    },
+                    runStage(stage) {
+                         if(stage === 1) this.startMemory();
+                         if(stage === 2) this.startReflex();
+                         if(stage === 3) this.startMath();
+                    },
+                    startMemory() {
+                         document.getElementById('game-memory').classList.remove('hidden');
+                         const grid = document.getElementById('memory-grid'); grid.innerHTML='';
+                         App.heist.sequence = []; App.heist.userSeq = [];
+                         for(let i=0;i<9;i++){ 
+                             const b = document.createElement('button'); b.className='hack-btn'; b.onclick=()=>this.checkMemory(i,b); grid.appendChild(b); 
+                         }
+                         for(let i=0;i<4;i++) App.heist.sequence.push(Math.floor(Math.random()*9));
+                         let k=0;
+                         const iv = setInterval(()=>{
+                             if(k>=App.heist.sequence.length){ clearInterval(iv); return; }
+                             const id = App.heist.sequence[k];
+                             grid.children[id].classList.add('hack-correct');
+                             setTimeout(()=>grid.children[id].classList.remove('hack-correct'), 300);
+                             k++;
+                         }, 600);
+                    },
+                    checkMemory(i,btn) {
+                        btn.classList.add('hack-correct'); setTimeout(()=>btn.classList.remove('hack-correct'),100);
+                        if(i !== App.heist.sequence[App.heist.userSeq.length]) return this.fail();
+                        App.heist.userSeq.push(i);
+                        if(App.heist.userSeq.length === App.heist.sequence.length) {
+                             document.getElementById('game-memory').classList.add('hidden');
+                             this.runStage(2);
+                        }
+                    },
+                    startReflex() {
+                        document.getElementById('game-reflex').classList.remove('hidden');
+                        App.heist.pos=0; App.heist.dir=2;
+                        App.heist.timer = setInterval(()=>{
+                            App.heist.pos += App.heist.dir;
+                            if(App.heist.pos>100||App.heist.pos<0) App.heist.dir*=-1;
+                            document.getElementById('reflex-cursor').style.left = App.heist.pos+'%';
+                        }, 16);
+                    },
+                    checkReflex() {
+                        clearInterval(App.heist.timer);
+                        if(App.heist.pos > 70 && App.heist.pos < 90) {
+                            document.getElementById('game-reflex').classList.add('hidden');
+                            this.runStage(3);
+                        } else this.fail();
+                    },
+                    startMath() {
+                        document.getElementById('game-math').classList.remove('hidden');
+                        const a=Math.floor(Math.random()*20), b=Math.floor(Math.random()*20);
+                        document.getElementById('math-problem').innerText = `${a}+${b}=?`;
+                        const opts = document.getElementById('math-options'); opts.innerHTML='';
+                        [a+b, a+b+1, a+b-1, a+b+2].sort(()=>Math.random()-0.5).forEach(o=>{
+                            opts.innerHTML+=`<button class="hack-btn text-white" onclick="${o===a+b?'App.systems.heist.success()':'App.systems.heist.fail()'}">${o}</button>`;
+                        });
+                    },
+                    success() {
+                        const r = App.heist.type==='small'?1000000:10000000;
+                        App.state.cash += r;
+                        App.toast("ERFOLG", "+"+App.fmt(r), "success");
+                        this.reset();
+                    },
+                    fail() {
+                        App.state.cash = Math.max(0, App.state.cash - 50000);
+                        App.toast("GESCHEITERT", "-50.000€", "error");
+                        this.reset();
+                    },
+                    reset() {
+                        document.getElementById('heist-game').classList.add('hidden');
+                        document.getElementById('heist-menu').classList.remove('hidden');
+                        ['memory','reflex','math'].forEach(g=>document.getElementById('game-'+g).classList.add('hidden'));
+                        App.nav('dashboard');
+                    }
+                }
+            },
+
+            // --- RENDERERS ---
+            renderCompany() {
+                const c = this.state.company;
+                if(!c) { document.getElementById('comp-setup').classList.remove('hidden'); document.getElementById('comp-dash').classList.add('hidden'); return; }
+                document.getElementById('comp-setup').classList.add('hidden'); document.getElementById('comp-dash').classList.remove('hidden');
+                
+                document.getElementById('comp-name').innerText = c.name;
+                document.getElementById('comp-staff-total').innerText = c.staff;
+                document.getElementById('staff-idle').innerText = c.staff - this.systems.company.getAssigned();
+
+                // Resources UI
+                const rm = document.getElementById('resource-market');
+                rm.innerHTML = '';
+                Object.keys(MATERIALS).forEach(m => {
+                    rm.innerHTML += `<div class="flex justify-between bg-slate-900 p-2 rounded mb-1 text-xs items-center"><span>${m} (${c.resources[m]||0})</span><button onclick="App.systems.company.buyResource('${m}')" class="text-emerald-400 font-bold">Kaufen (${MATERIALS[m].c*10}€)</button></div>`;
+                });
+
+                // Lines
+                const pl = document.getElementById('prod-lines'); pl.innerHTML='';
+                c.lines.forEach(l => {
+                    pl.innerHTML += `<div class="bg-slate-900 p-2 rounded mb-1 border ${l.paused?'border-amber-500':'border-cyan-500'}"><div class="flex justify-between text-xs text-white mb-1"><span>${l.n} (${l.workers} Worker)</span><span>${Math.floor(l.prog)}%</span></div><div class="prod-bar"><div class="prod-fill" style="width:${l.prog}%"></div></div></div>`;
+                });
+
+                // Warehouse
+                const wh = document.getElementById('warehouse-list'); wh.innerHTML='';
+                c.stock.forEach((s,i) => {
+                    wh.innerHTML += `<div class="flex justify-between bg-slate-900 p-2 rounded mb-1 text-xs"><span>${s.n} (${s.q}x)</span><button onclick="App.systems.company.sell(${i})" class="text-emerald-400 font-bold">Verkaufen (${App.fmt(s.p)})</button></div>`;
+                });
+            },
+            
+            renderStocks() {
+                const l = document.getElementById('stock-list'); l.innerHTML='';
+                STOCKS.forEach(s => {
+                    l.innerHTML += `<div class="flex justify-between bg-slate-900 p-3 rounded mb-2 cursor-pointer border-l-2 ${this.selectedStockId===s.id?'border-cyan-500':'border-transparent'}" onclick="App.selectStock('${s.id}')"><span>${s.n}</span><span class="font-mono text-cyan-400">${this.fmt(this.market[s.id].p)}</span></div>`;
+                });
+                if(this.selectedStockId) {
+                    const m = this.market[this.selectedStockId];
+                    document.getElementById('chart-title').innerText = STOCKS.find(x=>x.id===this.selectedStockId).n;
+                    document.getElementById('chart-price').innerText = this.fmt(m.p);
+                    if(this.chart) this.chart.destroy();
+                    this.chart = new Chart(document.getElementById('stockChart'), {type:'line', data:{labels:Array(20).fill(''), datasets:[{data:m.h, borderColor:'#06b6d4', tension:0.4}]}, options:{responsive:true, plugins:{legend:false}, scales:{x:{display:false}}}});
+                } else this.selectStock(STOCKS[0].id);
+            },
+            selectStock(id) { this.selectedStockId = id; this.renderStocks(); },
+
+            renderAuction() {
+                const a = this.auction;
+                document.getElementById('auc-item').innerText = a.item;
+                document.getElementById('auc-price').innerText = this.fmt(a.bid);
+                document.getElementById('auc-bidder').innerText = a.bidder || 'Keiner';
+                const left = Math.max(0, Math.ceil((a.end - Date.now())/1000));
+                document.getElementById('auc-timer').innerText = left > 0 ? `${left}s verbleibend` : "Beendet";
+            },
+
+            renderEstates() {
+                const l = document.getElementById('estate-list'); l.innerHTML='';
+                ESTATES.forEach((e,i) => {
+                    const owned = this.state.estates.find(x=>x.id===e.id);
+                    l.innerHTML += `<div class="glass-card p-4 rounded text-center border-t border-amber-500/30"><div class="font-bold text-white mb-2">${e.n}</div><div class="text-xs text-slate-400 mb-4">Preis: ${this.fmt(e.c)}<br>Miete: ${this.fmt(e.r)}</div>${owned ? `<div class="text-emerald-400 font-bold text-xs bg-emerald-900/20 py-1 rounded">IM BESITZ ${owned.tenant?'(VERMIETET)':''}</div>${!owned.tenant?`<button onclick="App.findTenant(${i})" class="mt-2 text-xs bg-slate-700 px-2 py-1 rounded">Mieter suchen</button>`:''}` : `<button onclick="App.buyEstate(${i})" class="btn-primary text-xs w-full">KAUFEN</button>`}</div>`;
+                });
+            },
+            buyEstate(i) {
+                const e = ESTATES[i];
+                if(this.state.cash >= e.c) { this.state.cash -= e.c; this.state.estates.push({id:e.id, tenant:false}); this.renderEstates(); this.toast("Gekauft", e.n); }
+                else this.toast("Fehler", "Zu wenig Geld");
+            },
+            findTenant(i) {
+                const e = ESTATES[i]; const est = this.state.estates.find(x=>x.id===e.id);
+                if(est) { est.tenant = true; this.renderEstates(); this.toast("Erfolg", "Mieter gefunden"); }
+            },
+
+            // UTILS
+            fmt(n) { return new Intl.NumberFormat('de-DE', {style:'currency', currency:'EUR'}).format(n); },
+            updateUI() { document.getElementById('nav-cash').innerText = this.fmt(this.state.cash); },
+            toast(t,m,type='info') {
+                const d = document.createElement('div');
+                d.className = `bg-slate-900 border-l-4 ${type==='error'?'border-rose-500 text-rose-400':'border-cyan-500 text-cyan-400'} px-4 py-3 rounded shadow-lg animate-fade-in`;
+                d.innerHTML = `<b>${t}</b> ${m}`;
+                document.getElementById('toast-container').appendChild(d);
+                setTimeout(()=>d.remove(), 3000);
+            }
+        };
+
+        window.App = App;
+        window.onload = () => App.init();
+    </script>
+</body>
+</html>
