@@ -3,435 +3,267 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TradeSim: Market Master Enterprise</title>
+    <title>TradeSim: Market Master Elite</title>
     
-    <!-- Frameworks & Icons -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
-    <!-- Typography -->
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;500;600;800&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;600;800&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
 
     <style>
-        /* --- CORE VISUALS --- */
-        :root {
-            --bg-deep: #020617;
-            --glass-bg: rgba(15, 23, 42, 0.85);
-            --glass-border: rgba(255, 255, 255, 0.08);
-            --accent-primary: #0ea5e9; /* Sky 500 */
-            --accent-secondary: #6366f1; /* Indigo 500 */
-            --success: #10b981;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-deep);
-            color: #e2e8f0;
-            background-image: 
-                radial-gradient(circle at 15% 50%, rgba(14, 165, 233, 0.08) 0%, transparent 25%),
-                radial-gradient(circle at 85% 30%, rgba(99, 102, 241, 0.08) 0%, transparent 25%),
-                url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%231e293b' fill-opacity='0.2'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-            overflow-x: hidden;
-            height: 100vh;
-        }
-
-        /* --- TYPOGRAPHY --- */
-        h1, h2, h3, .font-display { font-family: 'Oswald', sans-serif; letter-spacing: 0.05em; text-transform: uppercase; }
+        :root { --bg-dark: #020617; --glass-surface: rgba(15, 23, 42, 0.95); --glass-border: rgba(255, 255, 255, 0.08); --neon-cyan: #06b6d4; --neon-red: #ef4444; --neon-gold: #fbbf24; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-dark); color: #e2e8f0; background-image: radial-gradient(circle at 50% 0%, rgba(6, 182, 212, 0.05) 0%, transparent 60%); overflow-x: hidden; }
+        h1, h2, h3, .font-display { font-family: 'Oswald', sans-serif; letter-spacing: 0.05em; }
         .font-mono { font-family: 'JetBrains Mono', monospace; }
-
-        /* --- SCROLLBAR --- */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #0f172a; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #475569; }
-
-        /* --- GLASS COMPONENTS --- */
-        .glass-panel {
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
-        }
-
-        .glass-card {
-            background: rgba(30, 41, 59, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.03);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-        }
-        .glass-card::after {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 100%);
-            opacity: 0; transition: opacity 0.3s;
-        }
-        .glass-card:hover {
-            transform: translateY(-5px);
-            border-color: rgba(14, 165, 233, 0.3);
-            box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.6);
-        }
-        .glass-card:hover::after { opacity: 1; }
-
-        /* --- UTILS --- */
+        
+        .glass-panel { background: var(--glass-surface); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
+        .glass-card { background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(255, 255, 255, 0.05); transition: all 0.2s; cursor: pointer; }
+        .glass-card:hover { transform: translateY(-4px); border-color: var(--neon-cyan); box-shadow: 0 10px 30px -10px rgba(6, 182, 212, 0.15); }
+        
         .hidden-view { display: none !important; }
-        .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .btn-primary { background: linear-gradient(135deg, #0891b2 0%, #2563eb 100%); color: white; font-weight: 700; padding: 0.5rem 1rem; border-radius: 0.5rem; transition: 0.2s; font-family: 'Oswald', sans-serif; text-transform: uppercase; }
+        .btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
+        .btn-danger { background: linear-gradient(135deg, #be123c 0%, #e11d48 100%); color: white; font-weight: 700; padding: 0.5rem 1rem; border-radius: 0.5rem; transition: 0.2s; font-family: 'Oswald', sans-serif; text-transform: uppercase; }
+        .btn-gold { background: linear-gradient(135deg, #d97706 0%, #fbbf24 100%); color: black; font-weight: 700; padding: 0.5rem 1rem; border-radius: 0.5rem; transition: 0.2s; font-family: 'Oswald', sans-serif; text-transform: uppercase; }
+        
+        .input-std { background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; color: white; padding: 0.75rem; border-radius: 0.5rem; width: 100%; font-family: 'JetBrains Mono', monospace; outline: none; }
+        .input-std:focus { border-color: var(--neon-cyan); }
 
-        /* --- BUTTONS --- */
-        .btn-primary {
-            background: linear-gradient(135deg, var(--accent-primary) 0%, #0284c7 100%);
-            color: white; font-weight: 700; padding: 0.75rem 1.5rem; border-radius: 0.5rem;
-            transition: all 0.2s; font-family: 'Oswald', sans-serif; letter-spacing: 0.1em;
-            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
-            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-        }
-        .btn-primary:hover { filter: brightness(1.15); transform: translateY(-1px); box-shadow: 0 6px 16px rgba(14, 165, 233, 0.3); }
-        .btn-primary:active { transform: translateY(0); }
-
-        .btn-danger {
-            background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
-            color: white; font-weight: 700; padding: 0.75rem 1.5rem; border-radius: 0.5rem;
-            transition: all 0.2s; font-family: 'Oswald', sans-serif; letter-spacing: 0.1em;
-            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
-        }
-        .btn-danger:hover { filter: brightness(1.15); transform: translateY(-1px); }
-
-        .btn-ghost {
-            background: rgba(255, 255, 255, 0.05); color: #cbd5e1;
-            padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.85rem; font-weight: 600;
-            transition: all 0.2s; border: 1px solid transparent;
-        }
-        .btn-ghost:hover { background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.1); color: white; }
-
-        /* --- INPUTS --- */
-        .input-tech {
-            background: rgba(15, 23, 42, 0.6);
-            border: 1px solid #334155;
-            color: white; padding: 12px; border-radius: 8px; width: 100%;
-            font-family: 'JetBrains Mono', monospace;
-            transition: 0.2s;
-        }
-        .input-tech:focus { border-color: var(--accent-primary); box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.1); outline: none; }
-
-        /* --- ADMIN TABLE --- */
-        .admin-table { w-full text-left border-collapse: collapse; }
-        .admin-table th { padding: 12px; color: #64748b; font-size: 0.75rem; text-transform: uppercase; border-bottom: 1px solid #1e293b; }
-        .admin-table td { padding: 12px; border-bottom: 1px solid #1e293b; color: #cbd5e1; font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; }
-        .admin-table tr:hover td { background: rgba(255,255,255,0.02); color: white; }
-
-        /* --- STATUS INDICATORS --- */
-        .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
-        .status-dot.green { background: var(--success); box-shadow: 0 0 8px var(--success); }
-        .status-dot.red { background: var(--danger); box-shadow: 0 0 8px var(--danger); }
+        .admin-table th { text-align: left; padding: 12px; color: #94a3b8; font-size: 0.75rem; text-transform: uppercase; border-bottom: 1px solid #334155; }
+        .admin-table td { padding: 12px; border-bottom: 1px solid #1e293b; }
+        .admin-table tr:hover { background: rgba(255,255,255,0.02); }
+        
+        .premium-glow { box-shadow: 0 0 15px rgba(251, 191, 36, 0.3); border-color: rgba(251, 191, 36, 0.5); }
     </style>
 </head>
-<body class="flex flex-col">
+<body>
 
-    <!-- AUTHENTICATION SCREEN -->
-    <div id="auth-screen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950 bg-[url('https://images.unsplash.com/photo-1642425149556-b2f797284f6e?auto=format&fit=crop&q=80')] bg-cover bg-center">
-        <div class="absolute inset-0 bg-slate-950/90 backdrop-blur-md"></div>
-        <div class="glass-panel p-10 rounded-2xl max-w-md w-full relative z-10 text-center border-t-4 border-sky-500 shadow-2xl">
-            <div class="mb-8">
-                <i class="fa-solid fa-earth-americas text-5xl text-sky-400 drop-shadow-[0_0_15px_rgba(56,189,248,0.5)]"></i>
-                <h1 class="text-4xl font-display font-bold text-white mt-4 tracking-wider">MARKET MASTER</h1>
-                <p class="text-slate-400 font-mono text-xs mt-2 tracking-widest">Global Financial Simulation</p>
+    <!-- AUTH -->
+    <div id="auth-screen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950 bg-[url('https://images.unsplash.com/photo-1639322537228-f710d846310a?auto=format&fit=crop&q=80')] bg-cover bg-center">
+        <div class="absolute inset-0 bg-slate-950/90 backdrop-blur-sm"></div>
+        <div class="glass-panel p-10 rounded-2xl max-w-md w-full relative z-10 text-center border-t-4 border-cyan-500 shadow-2xl">
+            <h1 class="text-4xl font-display font-bold text-white mb-2">TRADESIM</h1>
+            <p class="text-slate-400 text-sm mb-8 font-mono">Market Master Edition</p>
+            <div class="space-y-4 text-left">
+                <input type="text" id="login-name" class="input-std text-center uppercase tracking-widest text-lg text-cyan-300 mb-4" placeholder="CODENAME">
+                <input type="password" id="login-code" class="input-std text-center tracking-[0.5em] text-lg mb-6" placeholder="••••">
             </div>
-            
-            <div class="space-y-5 text-left">
-                <div>
-                    <label class="text-[10px] uppercase font-bold text-slate-500 ml-1">Codename</label>
-                    <input type="text" id="login-name" class="input-tech text-center text-lg uppercase text-sky-300" placeholder="USER ID">
-                </div>
-                <div>
-                    <label class="text-[10px] uppercase font-bold text-slate-500 ml-1">Sicherheitscode</label>
-                    <input type="password" id="login-code" class="input-tech text-center tracking-[0.5em] text-lg" placeholder="••••">
-                </div>
-            </div>
-
-            <button onclick="App.login()" class="btn-primary w-full mt-8 py-4 text-xl shadow-lg relative overflow-hidden group">
-                <span class="relative z-10">SYSTEM BEITRETEN</span>
-                <div class="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition duration-300"></div>
-            </button>
-            
-            <div class="mt-6 flex justify-between items-center text-xs font-mono text-slate-600 border-t border-slate-800 pt-4">
-                <span id="system-status"><i class="fa-solid fa-circle-notch fa-spin mr-1"></i> Checke Cloud...</span>
-                <span>V8.0.2 RC</span>
-            </div>
-            <p id="login-error" class="text-rose-400 text-xs mt-2 font-bold h-4"></p>
+            <button onclick="App.login()" class="btn-primary w-full py-3 text-lg shadow-lg shadow-cyan-500/20">LOGIN</button>
+            <p id="login-status" class="mt-4 text-xs font-mono h-4 text-rose-400"></p>
         </div>
     </div>
 
-    <!-- MAIN NAVIGATION -->
-    <nav class="h-20 border-b border-slate-800 bg-slate-950/90 backdrop-blur-xl sticky top-0 z-40 w-full flex-none">
-        <div class="max-w-7xl mx-auto h-full px-6 flex justify-between items-center">
-            <!-- Brand -->
-            <div class="flex items-center gap-4 cursor-pointer group" onclick="App.nav('dashboard')">
-                <div class="w-10 h-10 rounded-xl bg-slate-900 border border-slate-700 flex items-center justify-center text-sky-400 shadow-lg group-hover:border-sky-500 transition">
-                    <i class="fa-solid fa-chart-simple text-xl"></i>
+    <!-- APP CONTAINER -->
+    <div id="app-container" class="hidden min-h-screen flex flex-col">
+        
+        <!-- NAV -->
+        <nav class="h-16 border-b border-slate-800 bg-slate-950/90 backdrop-blur-xl sticky top-0 z-40">
+            <div class="max-w-7xl mx-auto h-full px-4 flex justify-between items-center">
+                <div class="flex items-center gap-3 cursor-pointer" onclick="App.nav('dashboard')">
+                    <i class="fa-solid fa-earth-americas text-cyan-500 text-xl"></i>
+                    <span class="font-display font-bold text-xl text-white">TRADE<span class="text-slate-600">SIM</span></span>
                 </div>
-                <div>
-                    <span class="font-display font-bold text-xl text-white block leading-none tracking-wide group-hover:text-sky-400 transition">TRADE<span class="text-slate-600">SIM</span></span>
-                    <span class="text-[9px] font-bold text-slate-500 uppercase tracking-[0.3em]">Ultimate</span>
-                </div>
-            </div>
-
-            <!-- Stats & Tools -->
-            <div class="flex items-center gap-8">
-                <!-- Market Timer -->
-                <div class="hidden md:flex flex-col items-end">
-                    <span class="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Nächster Fixkurs</span>
-                    <div class="flex items-center gap-2 text-sky-400 font-mono text-sm">
-                        <i class="fa-regular fa-clock"></i> <span id="market-timer">00:00</span>
-                    </div>
-                </div>
-
-                <!-- User Cash -->
-                <div class="text-right border-l border-slate-800 pl-8">
-                    <div class="text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">Verfügbares Kapital</div>
-                    <div id="nav-cash" class="font-mono text-xl font-bold text-white text-shadow-glow">0,00 €</div>
-                </div>
-
-                <!-- Admin Button (Contextual) -->
-                <button id="btn-admin" onclick="App.admin.open()" class="hidden bg-rose-500/10 text-rose-500 border border-rose-500/30 hover:bg-rose-600 hover:text-white px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 uppercase tracking-wide">
-                    <i class="fa-solid fa-shield-halved"></i> Admin
-                </button>
-
-                <!-- Logout -->
-                <button onclick="location.reload()" class="text-slate-600 hover:text-white transition p-2 rounded-full hover:bg-slate-800">
-                    <i class="fa-solid fa-power-off text-lg"></i>
-                </button>
-            </div>
-        </div>
-    </nav>
-
-    <!-- CONTENT AREA -->
-    <main class="flex-1 max-w-7xl w-full mx-auto p-6 pb-32 overflow-hidden flex flex-col relative">
-
-        <!-- DASHBOARD VIEW -->
-        <div id="view-dashboard" class="view-section animate-fade-in w-full">
-            <header class="text-center py-16">
-                <div class="inline-block bg-slate-900/50 rounded-full px-4 py-1 text-xs text-slate-400 font-mono mb-4 border border-slate-800">
-                    <span class="status-dot green"></span> SERVER ONLINE
-                </div>
-                <h1 class="text-6xl md:text-7xl font-display font-black text-white mb-4 tracking-tight drop-shadow-2xl">
-                    WILLKOMMEN, <span id="dash-user" class="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-indigo-500">USER</span>
-                </h1>
-                <p class="text-slate-400 text-lg max-w-2xl mx-auto">
-                    Der Markt schläft nie. Investiere in Aktien, Immobilien oder Luxusgüter.
-                </p>
-            </header>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Card: Stocks -->
-                <div onclick="App.nav('stocks')" class="glass-card rounded-2xl h-80 flex flex-col justify-end p-8 group border-t border-sky-500/30">
-                    <div class="absolute inset-0 bg-sky-600/5 group-hover:bg-sky-600/10 transition duration-700"></div>
-                    <i class="fa-solid fa-arrow-trend-up text-5xl text-sky-500 mb-6 group-hover:scale-110 transition duration-500 transform origin-bottom-left"></i>
-                    <h2 class="text-3xl font-display font-bold text-white relative z-10">AKTIENMARKT</h2>
-                    <p class="text-slate-400 text-sm mt-2 relative z-10">50+ Unternehmen. Stündliches Fixing.</p>
-                </div>
-                
-                <!-- Card: Real Estate -->
-                <div onclick="App.nav('realestate')" class="glass-card rounded-2xl h-80 flex flex-col justify-end p-8 group border-t border-amber-500/30">
-                    <div class="absolute inset-0 bg-amber-600/5 group-hover:bg-amber-600/10 transition duration-700"></div>
-                    <i class="fa-solid fa-building text-5xl text-amber-500 mb-6 group-hover:scale-110 transition duration-500 transform origin-bottom-left"></i>
-                    <h2 class="text-3xl font-display font-bold text-white relative z-10">IMMOBILIEN</h2>
-                    <p class="text-slate-400 text-sm mt-2 relative z-10">Häuser, Villen & passive Miete.</p>
-                </div>
-
-                <!-- Card: Auctions -->
-                <div onclick="App.nav('auctions')" class="glass-card rounded-2xl h-80 flex flex-col justify-end p-8 group border-t border-purple-500/30">
-                    <div class="absolute inset-0 bg-purple-600/5 group-hover:bg-purple-600/10 transition duration-700"></div>
-                    <i class="fa-solid fa-gavel text-5xl text-purple-500 mb-6 group-hover:scale-110 transition duration-500 transform origin-bottom-left"></i>
-                    <h2 class="text-3xl font-display font-bold text-white relative z-10">AUKTIONEN</h2>
-                    <p class="text-slate-400 text-sm mt-2 relative z-10">PvP Bieten um seltene Assets.</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- STOCKS VIEW -->
-        <div id="view-stocks" class="view-section hidden-view animate-fade-in w-full h-full flex flex-col">
-            <div class="flex justify-between items-center mb-6">
-                <button onclick="App.nav('dashboard')" class="text-slate-400 hover:text-white text-sm font-bold uppercase tracking-wider flex items-center gap-2 transition"><i class="fa-solid fa-arrow-left"></i> Dashboard</button>
-                <div class="flex gap-2">
-                    <button class="btn-ghost" onclick="App.stocks.filter('all')">Alle</button>
-                    <button class="btn-ghost" onclick="App.stocks.filter('watch')"><i class="fa-solid fa-star text-yellow-400 mr-1"></i> Watchlist</button>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1 min-h-0">
-                <!-- Stock List -->
-                <div class="lg:col-span-4 glass-panel rounded-2xl p-0 flex flex-col overflow-hidden border border-slate-700/50">
-                    <div class="p-4 bg-slate-900/50 border-b border-slate-700 flex justify-between items-center">
-                        <span class="text-xs font-bold text-slate-400 uppercase">Ticker Symbol</span>
-                        <span class="text-xs font-bold text-slate-400 uppercase">Kurs</span>
-                    </div>
-                    <div id="stock-list-container" class="flex-1 overflow-y-auto p-2 space-y-1 custom-scrollbar"></div>
-                </div>
-
-                <!-- Chart & Trading -->
-                <div class="lg:col-span-8 flex flex-col gap-6">
-                    <div class="glass-panel p-6 rounded-2xl border border-slate-700/50 relative">
-                        <div class="flex justify-between items-start mb-6">
-                            <div>
-                                <div class="flex items-center gap-3">
-                                    <h2 id="chart-name" class="text-3xl font-display font-bold text-white">---</h2>
-                                    <button id="btn-star" onclick="App.stocks.toggleWatch()" class="text-slate-600 hover:text-yellow-400 text-xl transition"><i class="fa-regular fa-star"></i></button>
-                                </div>
-                                <span id="chart-sym" class="text-sky-400 font-mono text-sm font-bold">---</span>
-                            </div>
-                            <div class="text-right">
-                                <div id="chart-price" class="text-5xl font-mono font-bold text-white">0.00</div>
-                                <div class="text-xs text-slate-500 mt-1 uppercase tracking-widest">Lokal interpoliert (10s)</div>
-                            </div>
-                        </div>
-
-                        <!-- Chart Canvas -->
-                        <div class="h-80 w-full bg-slate-900/50 rounded-xl p-4 border border-slate-800 mb-6 relative">
-                            <canvas id="stockChart"></canvas>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-4">
-                            <button onclick="App.stocks.trade('buy')" class="btn-primary w-full py-4 text-lg">KAUFEN</button>
-                            <button onclick="App.stocks.trade('sell')" class="btn-danger w-full py-4 text-lg">VERKAUFEN</button>
-                        </div>
-                    </div>
+                <div class="flex items-center gap-6">
+                    <div class="text-right border-l border-slate-800 pl-6"><div class="text-[10px] text-slate-500 font-bold uppercase">Vermögen</div><div id="nav-cash" class="font-mono text-lg font-bold text-white">0 €</div></div>
                     
-                    <!-- Portfolio Mini View -->
-                    <div class="glass-panel p-6 rounded-2xl flex-1 overflow-hidden flex flex-col">
-                        <h3 class="text-xs font-bold text-slate-500 uppercase mb-4 tracking-widest">Aktienbesitz</h3>
-                        <div id="portfolio-grid" class="grid grid-cols-2 md:grid-cols-4 gap-4 overflow-y-auto custom-scrollbar pr-2"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- REAL ESTATE VIEW -->
-        <div id="view-realestate" class="view-section hidden-view animate-fade-in w-full">
-            <button onclick="App.nav('dashboard')" class="text-slate-400 hover:text-white text-sm font-bold mb-6 flex items-center gap-2"><i class="fa-solid fa-arrow-left"></i> Dashboard</button>
-            <div class="glass-panel p-6 rounded-2xl mb-8 border-l-4 border-amber-500 flex justify-between items-center bg-gradient-to-r from-amber-900/10 to-transparent">
-                <div>
-                    <h2 class="text-3xl font-display font-bold text-white">Immobilien-Portfolio</h2>
-                    <p class="text-slate-400 text-sm mt-1">Automatische Mieteinnahmen alle 24h (Simuliert).</p>
-                </div>
-                <div class="text-right">
-                    <div class="text-xs text-slate-500 uppercase font-bold mb-1">Gesamtwert</div>
-                    <div id="prop-value" class="text-2xl font-mono text-white">0 €</div>
-                </div>
-            </div>
-            <div id="estate-grid" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
-        </div>
-
-        <!-- AUCTIONS VIEW -->
-        <div id="view-auctions" class="view-section hidden-view animate-fade-in w-full text-center">
-            <button onclick="App.nav('dashboard')" class="text-slate-400 hover:text-white text-sm font-bold mb-6 flex items-center gap-2"><i class="fa-solid fa-arrow-left"></i> Dashboard</button>
-            <div class="glass-panel p-12 rounded-3xl max-w-2xl mx-auto border border-purple-500/30 relative overflow-hidden">
-                <div class="absolute top-0 left-0 w-full h-1 bg-purple-900"><div id="auc-bar" class="h-full bg-purple-500 w-full transition-all duration-1000 linear"></div></div>
-                
-                <span class="inline-block bg-purple-500/20 text-purple-300 px-3 py-1 rounded-full text-xs font-bold mb-6 border border-purple-500/30 animate-pulse">LIVE EVENT</span>
-                <h2 class="text-4xl font-display font-black text-white mb-2">AUKTIONSHAUS</h2>
-                <div id="auc-timer" class="text-slate-400 font-mono mb-10 text-sm">Warte auf Server...</div>
-                
-                <div class="bg-slate-900/80 p-8 rounded-2xl border border-purple-500/20 mb-8 shadow-inner">
-                    <div class="text-slate-500 text-xs uppercase font-bold mb-2">Aktuelles Lot</div>
-                    <div id="auc-item" class="text-3xl font-bold text-white mb-6">---</div>
+                    <!-- ADMIN BTN -->
+                    <button id="btn-admin" onclick="App.nav('admin')" class="hidden bg-red-500/10 text-red-500 border border-red-500/50 hover:bg-red-500 hover:text-white px-3 py-1 rounded text-xs font-bold transition flex items-center gap-2">
+                        <i class="fa-solid fa-lock"></i> ADMIN PANEL
+                    </button>
                     
-                    <div class="grid grid-cols-2 gap-8 text-left">
-                        <div>
-                            <div class="text-xs text-slate-500 uppercase font-bold mb-1">Aktuelles Gebot</div>
-                            <div id="auc-price" class="text-4xl font-mono text-emerald-400 font-bold">0 €</div>
-                        </div>
-                        <div>
-                            <div class="text-xs text-slate-500 uppercase font-bold mb-1">Höchstbietender</div>
-                            <div id="auc-bidder" class="text-lg font-bold text-purple-400 mt-1 uppercase tracking-wider">---</div>
-                        </div>
-                    </div>
+                    <button onclick="location.reload()" class="text-slate-500 hover:text-white"><i class="fa-solid fa-power-off"></i></button>
                 </div>
-                
-                <button onclick="App.systems.auctions.bid()" class="btn-primary w-full py-4 text-xl shadow-xl shadow-purple-900/30 bg-purple-600 hover:bg-purple-500 border-none">GEBOT ABGEBEN (+5%)</button>
             </div>
+        </nav>
+
+        <!-- MAIN -->
+        <main class="flex-1 max-w-7xl w-full mx-auto p-4 pb-24">
             
-            <div class="mt-12 glass-panel p-6 rounded-2xl">
-                <h3 class="text-left text-xs font-bold text-slate-500 uppercase mb-4">Mein Inventar</h3>
-                <div id="auc-inventory" class="grid grid-cols-2 md:grid-cols-6 gap-4"></div>
+            <!-- DASHBOARD -->
+            <div id="view-dashboard" class="view-section animate-fade-in">
+                <header class="text-center py-12">
+                    <h1 class="text-6xl font-display font-bold text-white mb-2">MARKTÜBERSICHT</h1>
+                    <p class="text-slate-400 font-mono text-sm">Willkommen, <span id="welcome-user" class="text-cyan-400">USER</span></p>
+                </header>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div onclick="App.nav('stocks')" class="glass-card rounded-xl p-8 h-64 flex flex-col justify-end group border-t border-blue-500/30">
+                        <i class="fa-solid fa-arrow-trend-up text-5xl text-blue-500 mb-4 group-hover:scale-110 transition"></i>
+                        <h2 class="text-2xl font-bold text-white">Aktienmarkt</h2>
+                        <p class="text-xs text-slate-400 mt-1">Live Trading</p>
+                    </div>
+                    <div onclick="App.nav('realestate')" class="glass-card rounded-xl p-8 h-64 flex flex-col justify-end group border-t border-amber-500/30">
+                        <i class="fa-solid fa-city text-5xl text-amber-500 mb-4 group-hover:scale-110 transition"></i>
+                        <h2 class="text-2xl font-bold text-white">Immobilien</h2>
+                        <p class="text-xs text-slate-400 mt-1">Passive Einnahmen <span id="premium-badge-re" class="hidden text-amber-300 font-bold ml-1">(+50% PREMIUM)</span></p>
+                    </div>
+                    <div onclick="App.nav('auctions')" class="glass-card rounded-xl p-8 h-64 flex flex-col justify-end group border-t border-purple-500/30">
+                        <i class="fa-solid fa-gavel text-5xl text-purple-500 mb-4 group-hover:scale-110 transition"></i>
+                        <h2 class="text-2xl font-bold text-white">Auktionen</h2>
+                        <p class="text-xs text-slate-400 mt-1">Seltene Luxusgüter</p>
+                    </div>
+                </div>
             </div>
-        </div>
 
-        <!-- ADMIN PANEL VIEW (Fullscreen Overlay) -->
-        <div id="view-admin" class="view-section hidden-view animate-fade-in fixed inset-0 z-50 bg-[#020617] p-6 overflow-y-auto">
-            <div class="max-w-7xl mx-auto">
-                <div class="flex justify-between items-center mb-8 border-b border-red-900/50 pb-6">
-                    <h2 class="text-4xl font-display font-black text-red-600 flex items-center gap-4">
-                        <i class="fa-solid fa-user-secret"></i> ADMINISTRATOR CONSOLE
-                    </h2>
-                    <button onclick="App.nav('dashboard')" class="text-slate-400 hover:text-white font-bold uppercase text-sm"><i class="fa-solid fa-xmark mr-2"></i> Schließen</button>
-                </div>
-
-                <!-- Admin Stats -->
-                <div class="grid grid-cols-3 gap-6 mb-10">
-                    <div class="glass-panel p-6 rounded-xl border-l-4 border-emerald-500">
-                        <div class="text-xs text-slate-500 uppercase font-bold">Globales Vermögen</div>
-                        <div id="adm-global-cash" class="text-2xl font-mono text-white mt-1">0 €</div>
-                    </div>
-                    <div class="glass-panel p-6 rounded-xl border-l-4 border-blue-500">
-                        <div class="text-xs text-slate-500 uppercase font-bold">Registrierte Nutzer</div>
-                        <div id="adm-user-count" class="text-2xl font-mono text-white mt-1">0</div>
-                    </div>
-                    <div class="glass-panel p-6 rounded-xl border-l-4 border-red-500">
-                        <div class="text-xs text-slate-500 uppercase font-bold">Systemzeit</div>
-                        <div id="adm-time" class="text-2xl font-mono text-white mt-1">00:00</div>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 h-[600px]">
-                    <!-- User Management -->
-                    <div class="glass-panel p-0 rounded-2xl flex flex-col overflow-hidden border border-red-900/30">
-                        <div class="p-4 bg-red-950/20 border-b border-red-900/30 flex justify-between items-center">
-                            <h3 class="font-bold text-red-400 uppercase text-sm">Benutzer Datenbank</h3>
-                            <button onclick="App.admin.refreshUsers()" class="text-xs text-white bg-slate-800 px-3 py-1 rounded hover:bg-slate-700"><i class="fa-solid fa-rotate mr-1"></i> Refresh</button>
+            <!-- VIEW: STOCKS -->
+            <div id="view-stocks" class="view-section hidden-view animate-fade-in">
+                <button onclick="App.nav('dashboard')" class="text-slate-400 hover:text-white text-sm font-bold mb-4">ZURÜCK</button>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[700px]">
+                    <!-- List -->
+                    <div class="glass-panel p-4 rounded-xl flex flex-col border border-slate-700/50">
+                        <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-700">
+                            <h3 class="font-bold text-slate-300 text-xs uppercase">Markt (1h Takt)</h3>
+                            <button onclick="App.stocks.toggleWatchlist()" class="text-xs text-cyan-400 hover:text-white" id="watch-filter-btn">Alle zeigen</button>
                         </div>
-                        <div id="adm-user-list" class="flex-1 overflow-y-auto p-2 space-y-1 custom-scrollbar"></div>
+                        <div id="stock-list" class="space-y-2 flex-1 overflow-y-auto pr-1 custom-scrollbar"></div>
+                    </div>
+                    <!-- Detail -->
+                    <div class="lg:col-span-2 flex flex-col gap-6">
+                        <div class="glass-panel p-6 rounded-xl relative">
+                            <div class="flex justify-between items-start mb-4">
+                                <div>
+                                    <h2 id="chart-title" class="text-3xl font-display font-bold text-white">---</h2>
+                                    <span id="chart-sym" class="text-cyan-400 font-mono text-xs">---</span>
+                                </div>
+                                <div class="text-right">
+                                    <div id="chart-price" class="text-4xl font-mono font-bold text-white">0.00 €</div>
+                                    <button onclick="App.stocks.toggleFav()" class="mt-2 text-slate-500 hover:text-yellow-400 transition" id="fav-btn"><i class="fa-regular fa-star"></i> Merken</button>
+                                </div>
+                            </div>
+                            <div class="h-64 w-full bg-slate-900/50 rounded-xl p-2 mb-4 border border-slate-800"><canvas id="stockChart"></canvas></div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <button onclick="App.tradeStock('buy')" class="btn-primary bg-emerald-600 border-none hover:bg-emerald-500">KAUFEN</button>
+                                <button onclick="App.tradeStock('sell')" class="btn-danger border-none">VERKAUFEN</button>
+                            </div>
+                        </div>
+                        <!-- Portfolio -->
+                        <div class="glass-panel p-6 rounded-xl flex-1 overflow-y-auto">
+                            <h3 class="text-xs font-bold text-slate-500 uppercase mb-4">Mein Portfolio</h3>
+                            <div id="portfolio-list" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- REAL ESTATE VIEW -->
+            <div id="view-realestate" class="view-section hidden-view animate-fade-in w-full">
+                <button onclick="App.nav('dashboard')" class="text-slate-400 hover:text-white text-sm font-bold mb-6 flex items-center gap-2"><i class="fa-solid fa-arrow-left"></i> Dashboard</button>
+                <div class="glass-panel p-6 rounded-2xl mb-8 border-l-4 border-amber-500 flex justify-between items-center bg-gradient-to-r from-amber-900/10 to-transparent">
+                    <div>
+                        <h2 class="text-3xl font-display font-bold text-white">Immobilien-Portfolio</h2>
+                        <p class="text-slate-400 text-sm mt-1">Automatische Mieteinnahmen alle 24h (Simuliert).</p>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-xs text-slate-500 uppercase font-bold mb-1">Gesamteinnahmen</div>
+                        <div id="prop-value" class="text-2xl font-mono text-white">0 €</div>
+                    </div>
+                </div>
+                <div id="estate-grid" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+            </div>
+
+            <!-- AUCTIONS VIEW -->
+            <div id="view-auctions" class="view-section hidden-view animate-fade-in w-full text-center">
+                <button onclick="App.nav('dashboard')" class="text-slate-400 hover:text-white text-sm font-bold mb-6 flex items-center gap-2"><i class="fa-solid fa-arrow-left"></i> Dashboard</button>
+                <div class="glass-panel p-12 rounded-3xl max-w-2xl mx-auto border border-purple-500/30 relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-purple-900"><div id="auc-bar" class="h-full bg-purple-500 w-full transition-all duration-1000 linear"></div></div>
+                    
+                    <span class="inline-block bg-purple-500/20 text-purple-300 px-3 py-1 rounded-full text-xs font-bold mb-6 border border-purple-500/30 animate-pulse">LIVE EVENT</span>
+                    <h2 class="text-4xl font-display font-black text-white mb-2">AUKTIONSHAUS</h2>
+                    <div id="auc-timer" class="text-slate-400 font-mono mb-10 text-sm">Warte auf Server...</div>
+                    
+                    <div class="bg-slate-900/80 p-8 rounded-2xl border border-purple-500/20 mb-8 shadow-inner">
+                        <div class="text-slate-500 text-xs uppercase font-bold mb-2">Aktuelles Lot</div>
+                        <div id="auc-item" class="text-3xl font-bold text-white mb-6">---</div>
+                        
+                        <div class="grid grid-cols-2 gap-8 text-left">
+                            <div>
+                                <div class="text-xs text-slate-500 uppercase font-bold mb-1">Aktuelles Gebot</div>
+                                <div id="auc-price" class="text-4xl font-mono text-emerald-400 font-bold">0 €</div>
+                            </div>
+                            <div>
+                                <div class="text-xs text-slate-500 uppercase font-bold mb-1">Höchstbietender</div>
+                                <div id="auc-bidder" class="text-lg font-bold text-purple-400 mt-1 uppercase tracking-wider">---</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button onclick="App.systems.auctions.bid()" class="btn-primary w-full py-4 text-xl shadow-xl shadow-purple-900/30 bg-purple-600 hover:bg-purple-500 border-none">GEBOT ABGEBEN (+5%)</button>
+                </div>
+            </div>
+
+            <!-- ADMIN PANEL VIEW -->
+            <div id="view-admin" class="view-section hidden-view animate-fade-in fixed inset-0 z-50 bg-[#020617] p-6 overflow-y-auto">
+                <div class="max-w-7xl mx-auto">
+                    <div class="flex justify-between items-center mb-8 border-b border-red-900/50 pb-6">
+                        <h2 class="text-4xl font-display font-black text-red-600 flex items-center gap-4">
+                            <i class="fa-solid fa-user-secret"></i> ADMIN CONSOLE
+                        </h2>
+                        <button onclick="App.nav('dashboard')" class="text-slate-400 hover:text-white font-bold uppercase text-sm"><i class="fa-solid fa-xmark mr-2"></i> Schließen</button>
                     </div>
 
-                    <!-- Actions Panel -->
-                    <div class="glass-panel p-8 rounded-2xl flex flex-col justify-center items-center text-center border border-red-900/30 relative">
-                        <div id="adm-action-placeholder" class="text-slate-600 font-mono">Wähle einen Nutzer links aus.</div>
-                        <div id="adm-action-area" class="hidden w-full max-w-md">
-                            <h3 id="adm-target-name" class="text-3xl font-black text-white mb-6 uppercase">USER</h3>
-                            
-                            <div class="space-y-6">
-                                <div>
-                                    <label class="text-xs text-slate-500 uppercase font-bold block mb-2 text-left">Kontostand Bearbeiten</label>
-                                    <div class="flex gap-2">
-                                        <input type="number" id="adm-cash-input" class="input-std font-mono" placeholder="Betrag">
-                                        <button onclick="App.admin.setCash()" class="btn-primary py-2 px-6 text-sm">SETZEN</button>
+                    <!-- Admin Stats -->
+                    <div class="grid grid-cols-3 gap-6 mb-10">
+                        <div class="glass-panel p-6 rounded-xl border-l-4 border-emerald-500">
+                            <div class="text-xs text-slate-500 uppercase font-bold">Globales Vermögen</div>
+                            <div id="adm-global-cash" class="text-2xl font-mono text-white mt-1">0 €</div>
+                        </div>
+                        <div class="glass-panel p-6 rounded-xl border-l-4 border-blue-500">
+                            <div class="text-xs text-slate-500 uppercase font-bold">Registrierte Nutzer</div>
+                            <div id="adm-user-count" class="text-2xl font-mono text-white mt-1">0</div>
+                        </div>
+                        <div class="glass-panel p-6 rounded-xl border-l-4 border-red-500">
+                            <div class="text-xs text-slate-500 uppercase font-bold">Systemzeit</div>
+                            <div id="adm-time" class="text-2xl font-mono text-white mt-1">00:00</div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 h-[600px]">
+                        <!-- User Management -->
+                        <div class="glass-panel p-0 rounded-2xl flex flex-col overflow-hidden border border-red-900/30">
+                            <div class="p-4 bg-red-950/20 border-b border-red-900/30 flex justify-between items-center">
+                                <h3 class="font-bold text-red-400 uppercase text-sm">Benutzer Datenbank</h3>
+                                <button onclick="App.admin.refreshUsers()" class="text-xs text-white bg-slate-800 px-3 py-1 rounded hover:bg-slate-700"><i class="fa-solid fa-rotate mr-1"></i> Refresh</button>
+                            </div>
+                            <div id="adm-user-list" class="flex-1 overflow-y-auto p-2 space-y-1 custom-scrollbar"></div>
+                        </div>
+
+                        <!-- Actions Panel -->
+                        <div class="glass-panel p-8 rounded-2xl flex flex-col justify-center items-center text-center border border-red-900/30 relative">
+                            <div id="adm-action-placeholder" class="text-slate-600 font-mono">Wähle einen Nutzer links aus.</div>
+                            <div id="adm-action-area" class="hidden w-full max-w-md">
+                                <h3 id="adm-target-name" class="text-3xl font-black text-white mb-6 uppercase">USER</h3>
+                                
+                                <div class="space-y-6">
+                                    <div>
+                                        <label class="text-xs text-slate-500 uppercase font-bold block mb-2 text-left">Kontostand Bearbeiten</label>
+                                        <div class="flex gap-2">
+                                            <input type="number" id="adm-cash-input" class="input-std font-mono" placeholder="Betrag">
+                                            <button onclick="App.admin.setCash()" class="btn-primary py-2 px-6 text-sm">SETZEN</button>
+                                        </div>
+                                        <div class="flex gap-2 mt-2">
+                                            <button onclick="App.admin.addCash(100000)" class="bg-emerald-900/50 text-emerald-400 text-xs px-3 py-1 rounded border border-emerald-900 hover:bg-emerald-900">+100k</button>
+                                            <button onclick="App.admin.addCash(1000000)" class="bg-emerald-900/50 text-emerald-400 text-xs px-3 py-1 rounded border border-emerald-900 hover:bg-emerald-900">+1M</button>
+                                            <button onclick="App.admin.addCash(-100000)" class="bg-rose-900/50 text-rose-400 text-xs px-3 py-1 rounded border border-rose-900 hover:bg-rose-900">-100k</button>
+                                        </div>
                                     </div>
-                                    <div class="flex gap-2 mt-2">
-                                        <button onclick="App.admin.addCash(100000)" class="bg-emerald-900/50 text-emerald-400 text-xs px-3 py-1 rounded border border-emerald-900 hover:bg-emerald-900">+100k</button>
-                                        <button onclick="App.admin.addCash(1000000)" class="bg-emerald-900/50 text-emerald-400 text-xs px-3 py-1 rounded border border-emerald-900 hover:bg-emerald-900">+1M</button>
-                                        <button onclick="App.admin.addCash(-100000)" class="bg-rose-900/50 text-rose-400 text-xs px-3 py-1 rounded border border-rose-900 hover:bg-rose-900">-100k</button>
+                                    <div class="pt-6 border-t border-slate-800">
+                                        <button onclick="App.admin.banTarget()" class="btn-danger w-full py-4 text-lg">NUTZER BANNEN</button>
                                     </div>
-                                </div>
-                                <div class="pt-6 border-t border-slate-800">
-                                    <button onclick="App.admin.banTarget()" class="btn-danger w-full py-4 text-lg">NUTZER BANNEN</button>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Market Manipulation -->
-                <div class="mt-8 glass-panel p-6 rounded-2xl border border-blue-900/30">
-                    <h3 class="font-bold text-blue-400 uppercase text-sm mb-4">Markt Eingriff</h3>
-                    <div id="adm-stock-list" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
-                    <div class="mt-6 flex gap-4">
-                        <button onclick="App.admin.marketEvent('crash')" class="bg-rose-950 text-rose-500 border border-rose-900 px-6 py-3 rounded font-bold hover:bg-rose-900 transition flex-1">MARKT CRASH (-30%)</button>
-                        <button onclick="App.admin.marketEvent('pump')" class="bg-emerald-950 text-emerald-500 border border-emerald-900 px-6 py-3 rounded font-bold hover:bg-emerald-900 transition flex-1">MARKT PUMP (+30%)</button>
+                    <!-- Market Manipulation -->
+                    <div class="mt-8 glass-panel p-6 rounded-2xl border border-blue-900/30">
+                        <h3 class="font-bold text-blue-400 uppercase text-sm mb-4">Markt Eingriff</h3>
+                        <div id="adm-stock-list" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+                        <div class="mt-6 flex gap-4">
+                            <button onclick="App.admin.marketAction('crash')" class="btn-danger flex-1">MARKT CRASH (-30%)</button>
+                            <button onclick="App.admin.marketAction('pump')" class="btn-primary bg-emerald-600 border-none hover:bg-emerald-500 flex-1">MARKT PUMP (+30%)</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -459,6 +291,9 @@
             const name = `${NAMES[i%NAMES.length]} ${sec}`;
             STOCKS.push({ id:`S${i.toString().padStart(2,'0')}`, n:name, b: Math.floor(Math.random()*200)+20 });
         }
+        
+        // PREMIUM STOCK (Only visible to admin/florian)
+        STOCKS.push({ id:'QUANTUM', n:'QUANTUM X', b: 5000 });
 
         const ESTATES = [
             {id:'E01', n:'Kiosk', c:50000, r:200, i:'https://images.unsplash.com/photo-1556740738-b6a63e27c4df?w=400'},
@@ -473,28 +308,33 @@
         // --- APP ---
         const App = {
             db: null, user: null, useCloud: false, appId: 'default',
-            state: { cash: 50000, stocks: {}, estates: [], watchlist: [], banned: false, inventory: [] },
-            market: {}, // { id: { start: 100, end: 120, nextSync: ts } }
-            auction: { item: null, bid: 0, bidder: null, end: 0 },
+            state: { cash: 50000, stocks: {}, estates: [], watchlist: [], banned: false, isPremium: false },
+            market: {},
             chart: null, selStock: null, adminTarget: null,
+            auction: { item: null, bid: 0, bidder: null, end: 0 },
 
             async init() {
                 try {
-                    const cfg = JSON.parse(new URLSearchParams(window.location.search).get('__firebase_config')||'{}');
-                    this.appId = new URLSearchParams(window.location.search).get('__app_id')||'default';
-                    if(cfg.apiKey) {
-                        const app = initializeApp(cfg);
-                        const auth = getAuth(app);
-                        this.db = getFirestore(app);
-                        await signInAnonymously(auth);
-                        this.useCloud = true;
-                    }
+                    const cfg = {
+                        apiKey: "AIzaSyCRlJkg5cjTArV6_r_AbAouro6C5BKfhW8",
+                        authDomain: "aktien-a5ff6.firebaseapp.com",
+                        projectId: "aktien-a5ff6",
+                        storageBucket: "aktien-a5ff6.firebasestorage.app",
+                        messagingSenderId: "314450483061",
+                        appId: "1:314450483061:web:4395f3b5ae4796b723a53c",
+                        measurementId: "G-JGX3Z3QQJD"
+                    };
+                    const app = initializeApp(cfg);
+                    const auth = getAuth(app);
+                    this.db = getFirestore(app);
+                    await signInAnonymously(auth);
+                    this.useCloud = true;
                 } catch(e) { console.log("Offline Mode"); }
 
                 // Local Market Init (Fallback)
                 STOCKS.forEach(s => this.market[s.id] = { start: s.b, end: s.b * 1.1, nextSync: Date.now() + 3600000 });
                 
-                setInterval(() => this.tick(), 1000); // 1s Heartbeat
+                setInterval(() => this.tick(), 1000); 
             },
 
             async login() {
@@ -506,26 +346,31 @@
                 if (USERS[n] !== c) return err.innerText = "Code falsch.";
                 
                 this.user = n;
+                this.state.isPremium = (n === 'florian'); // PREMIUM FEATURE
+
                 document.getElementById('auth-screen').classList.add('hidden');
                 document.getElementById('app-container').classList.remove('hidden');
                 document.getElementById('nav-id').innerText = n.toUpperCase();
                 document.getElementById('dash-user').innerText = n.toUpperCase();
                 
                 if (n === 'kayden') document.getElementById('btn-admin').classList.remove('hidden');
+                if (n === 'florian') document.getElementById('premium-badge-re').classList.remove('hidden');
 
                 // Load Data
                 if(this.useCloud) {
-                    const ref = doc(this.db, 'artifacts', this.appId, 'public', 'data', 'users', n);
+                    const ref = doc(this.db, 'artifacts', 'aktien-a5ff6', 'public', 'data', 'users', n);
                     const snap = await getDoc(ref);
                     
                     if(snap.exists()) {
                         const d = snap.data();
                         if(d.banned) { alert("ACCOUNT GESPERRT"); location.reload(); return; }
                         this.state = d;
+                        // Enforce premium if lost
+                        if(n==='florian') this.state.isPremium = true;
                     } else await setDoc(ref, this.state);
 
                     // Add to directory
-                    const dirRef = doc(this.db, 'artifacts', this.appId, 'public', 'data', 'meta', 'directory');
+                    const dirRef = doc(this.db, 'artifacts', 'aktien-a5ff6', 'public', 'data', 'meta', 'directory');
                     runTransaction(this.db, async (t) => {
                         const d = await t.get(dirRef);
                         const list = d.exists() ? d.data().list : [];
@@ -534,7 +379,7 @@
 
                     // Listeners
                     this.syncMarketCloud();
-                    onSnapshot(doc(this.db, 'artifacts', this.appId, 'public', 'data', 'auction', 'active'), s => {
+                    onSnapshot(doc(this.db, 'artifacts', 'aktien-a5ff6', 'public', 'data', 'auction', 'active'), s => {
                         if(s.exists()) { this.auction = s.data(); if(this.view==='auctions') this.renderAuction(); }
                     });
                 } else {
@@ -563,21 +408,14 @@
                     });
                 }
 
-                // AUCTION (Offline Sim)
-                if(!this.useCloud && this.view==='auctions') {
-                    if(now > this.auction.end + 5000) {
-                        const i = AUCTION_ITEMS[Math.floor(Math.random()*AUCTION_ITEMS.length)];
-                        this.auction = { item: i.n, bid: i.v*0.5, end: now+60000, bidder:'System' };
-                    }
-                    this.renderAuction();
-                }
-
-                // REAL ESTATE RENT (Every 60s for Test)
-                if(Math.random() < 0.016) { // ~1/60 chance per sec
+                // ESTATE RENT
+                if(Math.random() < 0.016) { 
                     let r = 0;
                     this.state.estates.forEach(e => {
                         const def = ESTATES.find(x=>x.id===e.id);
-                        if(e.tenant) { this.state.cash += def.r; r+=def.r; }
+                        let rent = def.r;
+                        if(this.state.isPremium) rent *= 1.5; // PREMIUM BOOST
+                        if(e.tenant) { this.state.cash += rent; r+=rent; }
                     });
                     if(r>0) this.toast("Miete", `+${this.fmt(r)}`);
                 }
@@ -585,7 +423,7 @@
                 // ADMIN STATS
                 if(this.view==='admin') {
                     const d = new Date();
-                    document.getElementById('admin-time').innerText = `${d.getHours()}:${d.getMinutes().toString().padStart(2,'0')}`;
+                    document.getElementById('adm-time').innerText = `${d.getHours()}:${d.getMinutes().toString().padStart(2,'0')}`;
                 }
 
                 // STOCK CHART LIVE UPDATE
@@ -596,34 +434,37 @@
             },
 
             save() {
-                if(this.useCloud) setDoc(doc(this.db, 'artifacts', this.appId, 'public', 'data', 'users', this.user), this.state);
+                if(this.useCloud) setDoc(doc(this.db, 'artifacts', 'aktien-a5ff6', 'public', 'data', 'users', this.user), this.state);
                 localStorage.setItem('ts_'+this.user, JSON.stringify(this.state));
             },
 
             async syncMarketCloud() {
-                const ref = doc(this.db, 'artifacts', this.appId, 'public', 'data', 'market', 'global');
+                const ref = doc(this.db, 'artifacts', 'aktien-a5ff6', 'public', 'data', 'market', 'global');
                 onSnapshot(ref, async (s) => {
                     const now = Date.now();
-                    // HOURLY SYNC LOGIC
                     const HOUR = 3600000; // 1h
                     let data = s.exists() ? s.data() : null;
 
                     if(!data || now > data.nextSync) {
                         // Master Update
-                        const nextSync = Math.ceil(now / HOUR) * HOUR; // Next full hour
+                        const nextSync = Math.ceil(now / HOUR) * HOUR; 
                         const newStocks = {};
                         STOCKS.forEach(def => {
                             const oldEnd = data?.stocks?.[def.id]?.end || def.b;
+                            // QUANTUM STOCK BOOST
+                            let vol = 0.2;
+                            let growth = 1;
+                            if(def.id === 'QUANTUM') { vol=0.5; growth=1.1; } // Always up
+
                             newStocks[def.id] = {
                                 start: oldEnd,
-                                end: Math.max(1, oldEnd * (1 + (Math.random()-0.5)*0.2)) // +/- 10%
+                                end: Math.max(1, oldEnd * growth * (1 + (Math.random()-0.5)*vol))
                             };
                         });
                         data = { stocks: newStocks, nextSync, lastUpdate: now };
                         await setDoc(ref, data);
                     }
                     
-                    // Apply
                     Object.keys(data.stocks).forEach(k => {
                         const m = this.market[k];
                         if(m) {
@@ -636,7 +477,6 @@
                 });
             },
 
-            // --- NAVIGATION ---
             nav(v) {
                 this.view = v;
                 document.querySelectorAll('.view-section').forEach(e=>e.classList.add('hidden-view'));
@@ -651,33 +491,30 @@
             getPrice(id) {
                 const m = this.market[id];
                 const now = Date.now();
-                // Interpolation: Current = Start + (End - Start) * Progress
-                // Progress is fraction of hour passed
-                // But simplified: For 60s test sync, progress is within 60s
-                // Cloud Sync is hourly.
-                const total = m.nextSync - (m.nextSync - 3600000); // 1h duration
+                const total = m.nextSync - (m.nextSync - 3600000); // 1h
                 let prog = 1 - ((m.nextSync - now) / total);
                 prog = Math.max(0, Math.min(1, prog));
                 
                 let p = m.start + (m.end - m.start) * prog;
-                
-                // Add Noise (reduces near target)
                 const noise = (Math.random()-0.5) * (p * 0.05 * (1-prog));
                 return p + noise;
             },
             renderStocks() {
                 const l = document.getElementById('stock-list'); l.innerHTML='';
-                const sorted = [...STOCKS].sort((a,b) => (this.state.watchlist.includes(b.id)?1:0)-(this.state.watchlist.includes(a.id)?1:0));
                 
-                sorted.forEach(s => {
+                STOCKS.forEach(s => {
+                    // Hide premium stock for normal users
+                    if(s.id === 'QUANTUM' && !this.state.isPremium && this.user !== 'kayden') return;
+
                     const p = this.getPrice(s.id);
                     const w = this.state.watchlist.includes(s.id);
                     l.innerHTML += `
-                    <div onclick="App.selectStock('${s.id}')" class="p-3 bg-slate-800/40 rounded-lg mb-2 flex justify-between items-center cursor-pointer hover:bg-slate-700 ${this.selStock===s.id?'border-l-4 border-cyan-400':''}">
+                    <div onclick="App.selectStock('${s.id}')" class="p-3 bg-slate-800/40 rounded-lg mb-2 flex justify-between items-center cursor-pointer hover:bg-slate-700 ${this.selStock===s.id?'border-l-4 border-cyan-400':''} ${s.id==='QUANTUM'?'premium-glow':''}">
                         <div>
                             <div class="flex items-center gap-2">
                                 ${w?'<i class="fa-solid fa-star text-yellow-400 text-[10px]"></i>':''}
                                 <span class="font-bold text-white text-sm">${s.n}</span>
+                                ${s.id==='QUANTUM'?'<i class="fa-solid fa-crown text-yellow-500 text-xs"></i>':''}
                             </div>
                             <span class="text-[10px] text-slate-500">${s.id}</span>
                         </div>
@@ -703,7 +540,7 @@
                 document.getElementById('fav-btn').innerHTML = w ? '<i class="fa-solid fa-star"></i>' : '<i class="fa-regular fa-star"></i>';
                 document.getElementById('fav-btn').className = w ? 'text-yellow-400' : 'text-slate-500';
 
-                // Setup Chart
+                // Chart
                 if(this.chart) this.chart.destroy();
                 const ctx = document.getElementById('stockChart').getContext('2d');
                 this.chart = new Chart(ctx, {
@@ -752,12 +589,15 @@
                 const l = document.getElementById('estate-list'); l.innerHTML='';
                 ESTATES.forEach((e,i) => {
                     const own = this.state.estates.find(x=>x.id===e.id);
+                    let rentDisplay = e.r;
+                    if(this.state.isPremium) rentDisplay *= 1.5;
+
                     l.innerHTML += `
                     <div class="glass-card rounded-xl overflow-hidden group relative">
                         <img src="${e.img}" class="h-48 w-full object-cover opacity-60">
                         <div class="absolute bottom-0 left-0 w-full p-4 bg-gradient-to-t from-black to-transparent">
                             <h3 class="font-bold text-white">${e.n}</h3>
-                            <div class="text-xs text-slate-300 mt-1">${this.fmt(e.c)} | +${this.fmt(e.r)}/Tag</div>
+                            <div class="text-xs text-slate-300 mt-1">${this.fmt(e.c)} | +${this.fmt(rentDisplay)}/Tag ${this.state.isPremium?'<span class="text-amber-300 font-bold">UP</span>':''}</div>
                             <div class="mt-3">
                                 ${own ? 
                                     `<div class="bg-emerald-900/50 text-emerald-400 text-center py-1 rounded text-xs font-bold border border-emerald-500/20">${own.tenant?'VERMIETET':'LEER'}</div>${!own.tenant?`<button onclick="App.findTenant('${e.id}')" class="w-full mt-1 bg-slate-700 text-xs py-1 rounded hover:bg-slate-600">Mieter suchen</button>`:''}`
@@ -796,7 +636,7 @@
                 },
                 renderStocks() {
                     const l = document.getElementById('admin-stock-list');
-                    l.innerHTML = STOCKS.map(s => `<div class="flex justify-between bg-slate-800 p-2 rounded mb-1 text-xs"><span class="text-white">${s.n}</span><button onclick="App.admin.setStock('${s.id}')" class="text-cyan-400">Preis</button></div>`).join('');
+                    l.innerHTML = STOCKS.map(s => `<div class="flex justify-between bg-slate-800 p-2 rounded mb-1 text-xs items-center"><span>${s.n}</span><button onclick="App.admin.setStock('${s.id}')" class="text-cyan-400">Preis</button></div>`).join('');
                 },
                 async select(u) {
                     App.adminTarget = u;
@@ -804,7 +644,7 @@
                     document.getElementById('admin-user-detail').classList.remove('hidden');
                     document.getElementById('adm-sel-user').innerText = u.toUpperCase();
                     // Load live data
-                    const s = await getDoc(doc(App.db, 'artifacts', App.appId, 'public', 'data', 'users', u));
+                    const s = await getDoc(doc(App.db, 'artifacts', 'aktien-a5ff6', 'public', 'data', 'users', u));
                     if(s.exists()) {
                         const d = s.data();
                         document.getElementById('adm-user-cash').innerText = App.fmt(d.cash);
@@ -813,13 +653,13 @@
                 async setCash() {
                     const v = parseInt(document.getElementById('adm-new-cash').value);
                     if(v && App.adminTarget) {
-                        await updateDoc(doc(App.db, 'artifacts', App.appId, 'public', 'data', 'users', App.adminTarget), {cash:v});
+                        await updateDoc(doc(App.db, 'artifacts', 'aktien-a5ff6', 'public', 'data', 'users', App.adminTarget), {cash:v});
                         App.toast("Admin", "Gesetzt"); this.select(App.adminTarget);
                     }
                 },
                 async addCash(v) {
                     if(App.adminTarget) {
-                        const ref = doc(App.db, 'artifacts', App.appId, 'public', 'data', 'users', App.adminTarget);
+                        const ref = doc(App.db, 'artifacts', 'aktien-a5ff6', 'public', 'data', 'users', App.adminTarget);
                         await runTransaction(App.db, async(t)=>{
                             const d = (await t.get(ref)).data();
                             t.update(ref, {cash: d.cash+v});
@@ -829,13 +669,13 @@
                 },
                 async banUser() {
                     if(confirm("Bannen?") && App.adminTarget) {
-                        await updateDoc(doc(App.db, 'artifacts', App.appId, 'public', 'data', 'users', App.adminTarget), {banned:true});
+                        await updateDoc(doc(App.db, 'artifacts', 'aktien-a5ff6', 'public', 'data', 'users', App.adminTarget), {banned:true});
                         App.toast("Admin", "Gebannt");
                     }
                 },
                 async setStock(id) {
                     const p = prompt("Preis:");
-                    if(p) await updateDoc(doc(App.db, 'artifacts', App.appId, 'public', 'data', 'market', 'global'), { [`stocks.${id}.start`]: parseFloat(p), [`stocks.${id}.end`]: parseFloat(p) });
+                    if(p) await updateDoc(doc(App.db, 'artifacts', 'aktien-a5ff6', 'public', 'data', 'market', 'global'), { [`stocks.${id}.start`]: parseFloat(p), [`stocks.${id}.end`]: parseFloat(p) });
                 }
             },
 
@@ -844,7 +684,7 @@
                 const next = Math.ceil(App.auction.bid * 1.05);
                 if(App.state.cash>=next) {
                     App.state.cash-=next;
-                    if(App.useCloud) updateDoc(doc(App.db, 'artifacts', App.appId, 'public', 'data', 'auction', 'active'), { bid:next, bidder:App.user, end: Date.now()+30000 });
+                    if(App.useCloud) updateDoc(doc(App.db, 'artifacts', 'aktien-a5ff6', 'public', 'data', 'auction', 'active'), { bid:next, bidder:App.user, end: Date.now()+30000 });
                     else { App.auction.bid=next; App.auction.bidder='Du'; App.auction.end+=5000; }
                 } else App.toast("Fehler","Geld fehlt");
             }}},
@@ -852,9 +692,9 @@
             // UTILS
             fmt(n) { return new Intl.NumberFormat('de-DE', {style:'currency', currency:'EUR'}).format(n); },
             updateUI() { document.getElementById('nav-cash').innerText = this.fmt(this.state.cash); },
-            toast(t,m) {
+            toast(t,m,type='info') {
                 const d = document.createElement('div');
-                d.className = "bg-slate-900 border-l-4 border-cyan-500 text-white px-4 py-3 rounded shadow-lg animate-fade-in";
+                d.className = "bg-slate-900 border-l-4 border-cyan-500 text-white px-4 py-3 rounded shadow-lg animate-fade-in pointer-events-auto mb-2";
                 d.innerHTML = `<b>${t}</b> ${m}`;
                 document.getElementById('toast-container').appendChild(d);
                 setTimeout(()=>d.remove(), 3000);
