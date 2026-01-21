@@ -3,242 +3,233 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TradeSim: Phoenix</title>
+    <title>TradeSim: Market Master</title>
     
-    <!-- Dependencies -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;600;800&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
 
     <style>
-        /* --- THEME --- */
-        :root {
-            --bg-main: #0b0f19;
-            --panel-bg: rgba(20, 27, 45, 0.95);
-            --border-col: rgba(56, 189, 248, 0.1);
-            --accent: #38bdf8; /* Sky 400 */
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-main);
-            color: #e2e8f0;
-            background-image: 
-                linear-gradient(rgba(11, 15, 25, 0.95), rgba(11, 15, 25, 0.98)),
-                url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2338bdf8' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        h1, h2, h3, .font-tech { font-family: 'Rajdhani', sans-serif; text-transform: uppercase; }
-
-        /* --- UI COMPONENTS --- */
-        .glass-panel {
-            background: var(--panel-bg);
-            border: 1px solid var(--border-col);
-            backdrop-filter: blur(12px);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-        }
-
-        .nav-item {
-            display: flex; align-items: center; gap: 12px;
-            padding: 12px 16px; margin-bottom: 4px;
-            border-radius: 8px; color: #94a3b8;
-            transition: all 0.2s; cursor: pointer;
-            border-left: 3px solid transparent;
-        }
-        .nav-item:hover { background: rgba(56, 189, 248, 0.1); color: white; }
-        .nav-item.active { background: rgba(56, 189, 248, 0.15); color: var(--accent); border-left-color: var(--accent); }
-
-        .btn {
-            background: var(--accent); color: #000; font-weight: 700;
-            padding: 8px 16px; border-radius: 6px; font-family: 'Rajdhani', sans-serif;
-            transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.05em;
-        }
-        .btn:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 0 15px rgba(56, 189, 248, 0.4); }
-        .btn:active { transform: translateY(0); }
-        .btn-red { background: #ef4444; color: white; } .btn-red:hover { box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); }
-
-        .input-tech {
-            background: rgba(0,0,0,0.3); border: 1px solid #334155;
-            color: white; padding: 10px; border-radius: 6px; width: 100%; outline: none;
-            font-family: 'JetBrains Mono', monospace; text-align: center;
-        }
-        .input-tech:focus { border-color: var(--accent); }
-
-        /* --- UTILS --- */
-        .hidden { display: none !important; }
-        .fade-in { animation: fadeIn 0.4s ease-out; }
+        :root { --bg-dark: #020617; --glass-surface: rgba(15, 23, 42, 0.95); --glass-border: rgba(56, 189, 248, 0.1); --neon-cyan: #06b6d4; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-dark); color: #e2e8f0; background-image: radial-gradient(circle at 50% 0%, rgba(6, 182, 212, 0.05) 0%, transparent 60%); overflow-x: hidden; }
+        h1, h2, h3, .font-display { font-family: 'Oswald', sans-serif; letter-spacing: 0.05em; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+        
+        .glass-panel { background: var(--glass-surface); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); box-shadow: 0 8px 32px rgba(0,0,0,0.6); }
+        .glass-card { background: rgba(30, 41, 59, 0.4); border: 1px solid rgba(255, 255, 255, 0.05); transition: all 0.2s; cursor: pointer; }
+        .glass-card:hover { transform: translateY(-4px); border-color: var(--neon-cyan); box-shadow: 0 10px 30px -10px rgba(6, 182, 212, 0.15); }
+        
+        .hidden-view { display: none !important; }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+        .btn-primary { background: linear-gradient(135deg, #0891b2 0%, #2563eb 100%); color: white; font-weight: 700; padding: 0.5rem 1rem; border-radius: 0.5rem; transition: 0.2s; font-family: 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: 1px; }
+        .btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
+        .btn-danger { background: linear-gradient(135deg, #be123c 0%, #e11d48 100%); color: white; font-weight: 700; padding: 0.5rem 1rem; border-radius: 0.5rem; transition: 0.2s; font-family: 'Oswald', sans-serif; text-transform: uppercase; }
+        
+        .input-std { background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; color: white; padding: 0.75rem; border-radius: 0.5rem; width: 100%; font-family: 'JetBrains Mono', monospace; outline: none; transition: 0.2s; }
+        .input-std:focus { border-color: var(--neon-cyan); box-shadow: 0 0 15px rgba(6, 182, 212, 0.2); }
 
-        /* Loader */
-        #loader { position: fixed; inset: 0; background: var(--bg-main); z-index: 100; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .loader-bar { width: 200px; height: 2px; background: #1e293b; margin-top: 20px; overflow: hidden; }
-        .loader-progress { width: 0%; height: 100%; background: var(--accent); transition: width 0.3s; }
-        #log { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #64748b; margin-top: 10px; }
+        .watchlist-active { color: #fbbf24; text-shadow: 0 0 10px rgba(251, 191, 36, 0.5); }
     </style>
 </head>
-<body class="flex">
-
-    <!-- LOADER -->
-    <div id="loader">
-        <h1 class="text-4xl font-bold text-white tracking-widest">TRADESIM <span class="text-sky-400">PHOENIX</span></h1>
-        <div class="loader-bar"><div id="loader-fill" class="loader-progress"></div></div>
-        <div id="log">Initialisiere System...</div>
-    </div>
+<body>
 
     <!-- AUTH SCREEN -->
-    <div id="view-auth" class="fixed inset-0 z-50 flex items-center justify-center bg-[#0b0f19] fade-in hidden">
-        <div class="glass-panel p-8 rounded-xl w-full max-w-sm text-center border-t-4 border-sky-500">
-            <div class="w-16 h-16 bg-sky-900/20 rounded-full flex items-center justify-center mx-auto mb-6 text-sky-400 text-2xl border border-sky-500/30">
-                <i class="fa-solid fa-user-shield"></i>
+    <div id="auth-screen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950 bg-[url('https://images.unsplash.com/photo-1614726365722-4050d1e68723?auto=format&fit=crop&q=80')] bg-cover bg-center">
+        <div class="absolute inset-0 bg-slate-950/90 backdrop-blur-sm"></div>
+        <div class="glass-panel p-10 rounded-2xl max-w-md w-full relative z-10 text-center border-t-4 border-cyan-500 shadow-2xl">
+            <h1 class="text-5xl font-display font-bold text-white mb-2">MARKET MASTER</h1>
+            <p class="text-slate-400 text-sm mb-8 font-mono">Terminal Access V7.0</p>
+            <div class="space-y-4 text-left">
+                <input type="text" id="login-name" class="input-std text-center uppercase tracking-widest text-lg text-cyan-300 mb-4" placeholder="CODENAME">
+                <input type="password" id="login-code" class="input-std text-center tracking-[0.5em] text-lg mb-6" placeholder="••••">
             </div>
-            <h2 class="text-2xl font-tech font-bold text-white mb-6">Identifizierung</h2>
-            <div class="space-y-4">
-                <input id="login-user" type="text" class="input-tech uppercase" placeholder="BENUTZERNAME">
-                <input id="login-pass" type="password" class="input-tech tracking-[5px]" placeholder="••••">
-                <button onclick="App.auth.login()" class="btn w-full py-3 text-lg">Verbinden</button>
-            </div>
-            <div id="auth-msg" class="mt-4 text-xs h-4 text-rose-400 font-mono"></div>
+            <button onclick="App.login()" class="btn-primary w-full py-4 text-xl shadow-lg shadow-cyan-500/20">VERBINDEN</button>
+            <p id="login-status" class="mt-4 text-xs font-mono h-4 text-rose-400"></p>
         </div>
     </div>
 
-    <!-- MAIN APP LAYOUT -->
-    <div id="view-main" class="flex w-full h-full hidden fade-in">
+    <!-- MAIN APP -->
+    <div id="app-container" class="hidden min-h-screen flex flex-col">
         
-        <!-- SIDEBAR -->
-        <aside class="w-64 bg-[#0f1420] border-r border-white/5 flex flex-col p-4">
-            <div class="flex items-center gap-3 px-2 mb-8">
-                <div class="w-8 h-8 rounded bg-sky-600 flex items-center justify-center text-white font-bold">TS</div>
-                <div>
-                    <h1 class="font-bold text-white text-lg leading-none">TRADESIM</h1>
-                    <span class="text-[10px] text-slate-500 font-mono">SERVER: ONLINE</span>
+        <!-- NAV -->
+        <nav class="h-16 border-b border-slate-800 bg-slate-950/90 backdrop-blur-xl sticky top-0 z-40">
+            <div class="max-w-7xl mx-auto h-full px-4 flex justify-between items-center">
+                <div class="flex items-center gap-3 cursor-pointer" onclick="App.nav('dashboard')">
+                    <i class="fa-solid fa-chart-simple text-cyan-500 text-2xl"></i>
+                    <span class="font-display font-bold text-2xl text-white">TRADE<span class="text-slate-600">SIM</span></span>
+                </div>
+                <div class="flex items-center gap-6">
+                    <div class="text-right hidden sm:block">
+                        <div class="text-[10px] text-slate-500 font-bold uppercase">Update in</div>
+                        <div id="market-timer" class="font-mono text-xs text-cyan-400">00:00</div>
+                    </div>
+                    <div class="text-right border-l border-slate-800 pl-6">
+                        <div class="text-[10px] text-slate-500 font-bold uppercase">Verfügbar</div>
+                        <div id="nav-cash" class="font-mono text-xl font-bold text-white text-shadow">0 €</div>
+                    </div>
+                    
+                    <!-- Admin Button -->
+                    <button id="btn-admin" onclick="App.admin.open()" class="hidden bg-red-500/10 text-red-500 border border-red-500/50 hover:bg-red-500 hover:text-white px-3 py-1 rounded text-xs font-bold transition flex items-center gap-2">
+                        <i class="fa-solid fa-user-secret"></i> ADMIN
+                    </button>
+                    
+                    <button onclick="location.reload()" class="text-slate-500 hover:text-white"><i class="fa-solid fa-power-off"></i></button>
                 </div>
             </div>
+        </nav>
 
-            <nav class="flex-1 space-y-1">
-                <div onclick="App.ui.nav('dashboard')" class="nav-item active" id="nav-dashboard"><i class="fa-solid fa-grip w-5"></i> Dashboard</div>
-                <div onclick="App.ui.nav('stocks')" class="nav-item" id="nav-stocks"><i class="fa-solid fa-chart-line w-5"></i> Aktien</div>
-                <div onclick="App.ui.nav('realestate')" class="nav-item" id="nav-realestate"><i class="fa-solid fa-building w-5"></i> Immobilien</div>
-                <div onclick="App.ui.nav('auctions')" class="nav-item" id="nav-auctions"><i class="fa-solid fa-gavel w-5"></i> Auktionen</div>
-                
-                <!-- Admin Only -->
-                <div onclick="App.ui.nav('admin')" class="nav-item text-rose-400 hidden" id="nav-admin"><i class="fa-solid fa-shield-halved w-5"></i> Admin Panel</div>
-            </nav>
-
-            <div class="mt-auto pt-4 border-t border-white/5">
-                <div class="bg-slate-800/50 p-3 rounded-lg border border-white/5">
-                    <div class="text-[10px] text-slate-400 uppercase font-bold">Mein Konto</div>
-                    <div id="wallet-cash" class="text-xl font-mono text-emerald-400 font-bold mt-1">0 €</div>
-                    <div class="text-[10px] text-slate-500 mt-1">ID: <span id="wallet-id" class="text-sky-400">---</span></div>
-                </div>
-                <button onclick="location.reload()" class="mt-3 text-xs text-slate-500 hover:text-white flex items-center gap-2 w-full justify-center p-2"><i class="fa-solid fa-power-off"></i> ABMELDEN</button>
-            </div>
-        </aside>
-
-        <!-- MAIN CONTENT AREA -->
-        <main class="flex-1 overflow-y-auto p-8 relative">
+        <!-- CONTENT -->
+        <main class="flex-1 max-w-7xl w-full mx-auto p-4 pb-24">
             
-            <!-- PAGE: DASHBOARD -->
-            <div id="page-dashboard" class="page-section">
-                <header class="mb-8">
-                    <h2 class="text-3xl font-tech font-bold text-white">Überblick</h2>
-                    <p class="text-slate-400 text-sm">Willkommen zurück, Commander.</p>
+            <!-- DASHBOARD -->
+            <div id="view-dashboard" class="view-section animate-fade-in">
+                <header class="text-center py-12">
+                    <h1 class="text-6xl font-display font-bold text-white mb-2">PORTFOLIO</h1>
+                    <p class="text-slate-400 font-mono text-sm">Willkommen zurück, <span id="dash-user" class="text-cyan-400">USER</span>.</p>
                 </header>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="glass-panel p-6 rounded-xl border-t-2 border-sky-500">
-                        <div class="text-slate-400 text-xs font-bold uppercase mb-2">Marktstatus</div>
-                        <div class="text-2xl font-bold text-white">AKTIV</div>
-                        <div class="text-emerald-400 text-sm mt-1"><i class="fa-solid fa-arrow-trend-up"></i> +2.4% Trend</div>
+                    <div onclick="App.nav('stocks')" class="glass-card rounded-xl p-8 h-64 flex flex-col justify-end group border-t border-blue-500/30">
+                        <i class="fa-solid fa-arrow-trend-up text-5xl text-blue-500 mb-4 group-hover:scale-110 transition"></i>
+                        <h2 class="text-2xl font-bold text-white">50+ Aktien</h2>
+                        <p class="text-xs text-slate-400 mt-1">Stündliches Update</p>
                     </div>
-                    <div class="glass-panel p-6 rounded-xl border-t-2 border-amber-500">
-                        <div class="text-slate-400 text-xs font-bold uppercase mb-2">Immobilien</div>
-                        <div class="text-2xl font-bold text-white" id="dash-props">0</div>
-                        <div class="text-slate-500 text-sm mt-1">Objekte im Besitz</div>
+                    <div onclick="App.nav('realestate')" class="glass-card rounded-xl p-8 h-64 flex flex-col justify-end group border-t border-amber-500/30">
+                        <i class="fa-solid fa-city text-5xl text-amber-500 mb-4 group-hover:scale-110 transition"></i>
+                        <h2 class="text-2xl font-bold text-white">Immobilien</h2>
+                        <p class="text-xs text-slate-400 mt-1">Ab 50.000 €</p>
                     </div>
-                    <div class="glass-panel p-6 rounded-xl border-t-2 border-purple-500">
-                        <div class="text-slate-400 text-xs font-bold uppercase mb-2">Auktion</div>
-                        <div class="text-2xl font-bold text-white" id="dash-auc-status">Warten...</div>
-                        <div class="text-purple-400 text-sm mt-1 font-mono" id="dash-auc-timer">00:00</div>
+                    <div onclick="App.nav('auctions')" class="glass-card rounded-xl p-8 h-64 flex flex-col justify-end group border-t border-purple-500/30">
+                        <i class="fa-solid fa-gavel text-5xl text-purple-500 mb-4 group-hover:scale-110 transition"></i>
+                        <h2 class="text-2xl font-bold text-white">Auktionen</h2>
+                        <p class="text-xs text-slate-400 mt-1">PvP Bieten</p>
                     </div>
                 </div>
             </div>
 
-            <!-- PAGE: STOCKS -->
-            <div id="page-stocks" class="page-section hidden">
-                <div class="flex justify-between items-end mb-6">
-                    <h2 class="text-3xl font-tech font-bold text-white">Börse</h2>
-                    <span class="text-xs text-emerald-400 font-mono animate-pulse">● LIVE CONNECTION</span>
-                </div>
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[600px]">
-                    <div class="glass-panel p-4 rounded-xl flex flex-col h-full col-span-1">
-                        <div id="stock-list" class="space-y-2 flex-1 overflow-y-auto pr-1"></div>
+            <!-- STOCKS -->
+            <div id="view-stocks" class="view-section hidden-view animate-fade-in">
+                <button onclick="App.nav('dashboard')" class="text-slate-400 hover:text-white text-sm font-bold mb-4">ZURÜCK</button>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[700px]">
+                    <!-- List -->
+                    <div class="glass-panel p-4 rounded-xl flex flex-col border border-slate-700/50">
+                        <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-700">
+                            <h3 class="font-bold text-slate-300 text-xs uppercase">Markt (1h Takt)</h3>
+                            <button onclick="App.stocks.toggleWatchlist()" class="text-xs text-cyan-400 hover:text-white" id="watch-filter-btn">Alle zeigen</button>
+                        </div>
+                        <div id="stock-list" class="space-y-2 flex-1 overflow-y-auto pr-1 custom-scrollbar"></div>
                     </div>
-                    <div class="glass-panel p-6 rounded-xl col-span-2 flex flex-col">
-                        <div class="flex justify-between mb-4">
-                            <div>
-                                <h3 id="chart-title" class="text-2xl font-bold text-white">---</h3>
-                                <div id="chart-price" class="text-3xl font-mono text-sky-400">0.00</div>
+                    <!-- Detail -->
+                    <div class="lg:col-span-2 flex flex-col gap-6">
+                        <div class="glass-panel p-6 rounded-xl relative">
+                            <div class="flex justify-between items-start mb-4">
+                                <div>
+                                    <h2 id="chart-title" class="text-3xl font-display font-bold text-white">---</h2>
+                                    <span id="chart-sym" class="text-cyan-400 font-mono text-xs">---</span>
+                                </div>
+                                <div class="text-right">
+                                    <div id="chart-price" class="text-4xl font-mono font-bold text-white">0.00 €</div>
+                                    <button onclick="App.stocks.toggleFav()" class="mt-2 text-slate-500 hover:text-yellow-400 transition" id="fav-btn"><i class="fa-regular fa-star"></i> Merken</button>
+                                </div>
+                            </div>
+                            <div class="h-64 w-full bg-slate-900/50 rounded-xl p-2 mb-4 border border-slate-800"><canvas id="stockChart"></canvas></div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <button onclick="App.tradeStock('buy')" class="btn-primary bg-emerald-600 border-none hover:bg-emerald-500">KAUFEN</button>
+                                <button onclick="App.tradeStock('sell')" class="btn-danger border-none">VERKAUFEN</button>
                             </div>
                         </div>
-                        <div class="flex-1 bg-slate-900/50 rounded-lg p-2 mb-4 relative">
-                            <canvas id="stockChart"></canvas>
-                        </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <button onclick="App.stocks.trade('buy')" class="btn bg-emerald-600 hover:bg-emerald-500 text-white">Kaufen</button>
-                            <button onclick="App.stocks.trade('sell')" class="btn btn-red">Verkaufen</button>
+                        <!-- Portfolio -->
+                        <div class="glass-panel p-6 rounded-xl flex-1 overflow-y-auto">
+                            <h3 class="text-xs font-bold text-slate-500 uppercase mb-4">Mein Portfolio</h3>
+                            <div id="portfolio-list" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- PAGE: REAL ESTATE -->
-            <div id="page-realestate" class="page-section hidden">
-                <h2 class="text-3xl font-tech font-bold text-white mb-6">Immobilienmarkt</h2>
-                <div id="estate-list" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+            <!-- REAL ESTATE -->
+            <div id="view-realestate" class="view-section hidden-view animate-fade-in">
+                <button onclick="App.nav('dashboard')" class="text-slate-400 hover:text-white text-sm font-bold mb-4">ZURÜCK</button>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="estate-list"></div>
             </div>
 
-            <!-- PAGE: AUCTIONS -->
-            <div id="page-auctions" class="page-section hidden">
-                <div class="max-w-2xl mx-auto text-center mt-10 glass-panel p-10 rounded-2xl border border-purple-500/30">
-                    <h2 class="text-4xl font-tech font-bold text-white mb-2">AUKTIONSHAUS</h2>
-                    <div class="w-full bg-slate-900 h-1 mt-4 mb-8"><div id="auc-bar" class="h-full bg-purple-500 w-0 transition-all duration-1000"></div></div>
+            <!-- AUCTIONS -->
+            <div id="view-auctions" class="view-section hidden-view animate-fade-in text-center">
+                <button onclick="App.nav('dashboard')" class="text-slate-400 hover:text-white text-sm font-bold mb-4">ZURÜCK</button>
+                <div class="glass-panel p-10 rounded-2xl max-w-xl mx-auto mt-10 relative overflow-hidden border border-purple-500/30">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-purple-900"><div id="auc-bar" class="h-full bg-purple-500 w-full transition-all duration-1000 linear"></div></div>
+                    <h2 class="text-3xl font-display font-black text-white mb-2">LIVE AUKTION</h2>
+                    <div id="auc-status" class="text-purple-400 font-mono mb-8 text-sm">Lade Daten...</div>
                     
-                    <div class="bg-slate-900/50 p-6 rounded-xl border border-purple-500/20 mb-6">
-                        <div class="text-slate-400 text-xs uppercase mb-1">Aktuelles Lot</div>
+                    <div class="bg-slate-900/50 p-6 rounded-xl border border-purple-500/20 mb-8">
+                        <div class="text-slate-400 text-xs uppercase font-bold mb-1">Gegenstand</div>
                         <div id="auc-item" class="text-2xl font-bold text-white mb-4">---</div>
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-2 gap-4 text-left">
                             <div>
                                 <div class="text-xs text-slate-500 uppercase">Gebot</div>
-                                <div id="auc-price" class="text-2xl font-mono text-emerald-400">0 €</div>
+                                <div id="auc-price" class="text-2xl font-mono text-emerald-400 font-bold">0 €</div>
                             </div>
                             <div>
-                                <div class="text-xs text-slate-500 uppercase">Bieter</div>
-                                <div id="auc-bidder" class="text-lg font-bold text-purple-400">---</div>
+                                <div class="text-xs text-slate-500 uppercase">Höchstbietender</div>
+                                <div id="auc-bidder" class="text-sm font-bold text-purple-400 mt-1 uppercase">---</div>
                             </div>
                         </div>
                     </div>
                     
-                    <button onclick="App.auctions.bid()" class="btn w-full py-4 text-lg bg-purple-600 text-white hover:bg-purple-500">GEBOT ABGEBEN (+5%)</button>
+                    <button onclick="App.systems.auctions.bid()" class="btn-primary w-full bg-purple-600 hover:bg-purple-500 shadow-purple-500/20">GEBOT ABGEBEN (+5%)</button>
                 </div>
             </div>
 
-            <!-- PAGE: ADMIN -->
-            <div id="page-admin" class="page-section hidden">
-                <h2 class="text-3xl font-tech font-bold text-rose-500 mb-6 border-b border-rose-900 pb-2">ADMIN CONSOLE [SECURE]</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div class="glass-panel p-6 rounded-xl">
-                        <h3 class="text-white font-bold mb-4">User Management</h3>
-                        <div id="admin-user-list" class="space-y-2 max-h-[400px] overflow-y-auto"></div>
+            <!-- ADMIN PANEL -->
+            <div id="admin-panel" class="hidden fixed inset-0 z-[60] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4">
+                <div class="glass-panel w-full max-w-4xl h-[80vh] rounded-2xl flex flex-col border border-red-600/50 shadow-2xl relative">
+                    <button onclick="document.getElementById('admin-panel').classList.add('hidden')" class="absolute top-4 right-4 text-slate-500 hover:text-white"><i class="fa-solid fa-times text-xl"></i></button>
+                    <div class="p-6 border-b border-red-900/30 bg-red-950/10">
+                        <h2 class="text-2xl font-display font-black text-red-500 flex items-center gap-3">
+                            <i class="fa-solid fa-shield-cat"></i> ADMIN CONTROL
+                        </h2>
                     </div>
-                    <div class="glass-panel p-6 rounded-xl">
-                        <h3 class="text-white font-bold mb-4">Markt Kontrolle</h3>
-                        <div id="admin-stock-control" class="space-y-2"></div>
+                    <div class="flex-1 overflow-hidden flex">
+                        <!-- User List -->
+                        <div class="w-1/3 border-r border-slate-800 p-4 bg-slate-900/30 overflow-y-auto">
+                            <h3 class="text-xs font-bold text-slate-400 uppercase mb-4">Spieler Verzeichnis</h3>
+                            <button onclick="App.admin.refreshUsers()" class="text-xs text-cyan-400 mb-2 hover:underline">Aktualisieren</button>
+                            <div id="admin-user-list" class="space-y-1"></div>
+                        </div>
+                        <!-- Details / Actions -->
+                        <div class="flex-1 p-8 overflow-y-auto">
+                            <div id="admin-user-detail" class="hidden">
+                                <h3 class="text-xl font-bold text-white mb-6">User: <span id="adm-sel-user" class="text-cyan-400">---</span></h3>
+                                
+                                <div class="grid grid-cols-2 gap-4 mb-8">
+                                    <div class="glass-panel p-4 rounded bg-slate-800">
+                                        <div class="text-xs text-slate-500">Bargeld</div>
+                                        <div id="adm-user-cash" class="text-xl font-mono text-white">0</div>
+                                    </div>
+                                    <div class="glass-panel p-4 rounded bg-slate-800">
+                                        <div class="text-xs text-slate-500">Networth</div>
+                                        <div id="adm-user-net" class="text-xl font-mono text-white">0</div>
+                                    </div>
+                                </div>
+
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="text-xs text-slate-500">Neuen Kontostand setzen</label>
+                                        <div class="flex gap-2 mt-1">
+                                            <input id="adm-new-cash" type="number" class="input-std p-2" placeholder="Betrag">
+                                            <button onclick="App.admin.setCash()" class="btn-primary py-2 text-xs">Setzen</button>
+                                        </div>
+                                    </div>
+                                    <div class="pt-4 border-t border-slate-800">
+                                        <button onclick="App.admin.banUser()" class="btn-danger w-full">Benutzer Bannen</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="admin-placeholder" class="text-center text-slate-600 mt-20">Wähle einen Nutzer aus der Liste.</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -246,410 +237,407 @@
         </main>
     </div>
 
-    <!-- TOASTS -->
-    <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none"></div>
+    <div id="toast-container" class="fixed bottom-8 right-8 z-[100] flex flex-col gap-2 pointer-events-none"></div>
 
-    <!-- LOGIC -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
         import { getAuth, signInAnonymously } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
-        import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc, collection } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+        import { getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot, runTransaction, collection, getDocs } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
         // --- CONFIG ---
-        const CONFIG = {
-            apiKey: "AIzaSyCRlJkg5cjTArV6_r_AbAouro6C5BKfhW8",
-            authDomain: "aktien-a5ff6.firebaseapp.com",
-            projectId: "aktien-a5ff6",
-            storageBucket: "aktien-a5ff6.firebasestorage.app",
-            messagingSenderId: "314450483061",
-            appId: "1:314450483061:web:4395f3b5ae4796b723a53c"
-        };
         const USERS = { 'kayden':'1234', 'tim':'1234', 'florian':'1234', 'jakob':'1234', 'vincent':'1234', 'joshua':'1234' };
-        const STOCKS = [
-            { id: 'NEBU', n: 'Nebula AI', p: 150 },
-            { id: 'AUTO', n: 'Future Motors', p: 85 },
-            { id: 'BIO', n: 'Apex Pharma', p: 240 },
-            { id: 'BANK', n: 'Global Bank', p: 45 },
-            { id: 'CRYP', n: 'BitCoin', p: 45000 }
-        ];
+        
+        // GEN 50 STOCKS
+        const SECTORS = ['TECH', 'BIO', 'AUTO', 'BANK', 'NRG', 'AI'];
+        const STOCK_NAMES = ['Nebula', 'Vertex', 'Omega', 'Prime', 'Zenith', 'Flux', 'Core', 'Apex', 'Nova', 'Echo'];
+        const STOCKS = [];
+        for(let i=0; i<50; i++) {
+            const sec = SECTORS[i % SECTORS.length];
+            const name = `${STOCK_NAMES[i % STOCK_NAMES.length]} ${sec}`;
+            STOCKS.push({ id: `S${i.toString().padStart(2,'0')}`, n: name, p: Math.floor(Math.random()*200)+20, v: 0.05 + Math.random()*0.1 });
+        }
+
         const ESTATES = [
-            { id: 'GARAGE', n: 'Garage', c: 50000, r: 200 },
-            { id: 'APT', n: 'Appartement', c: 150000, r: 800 },
-            { id: 'HOUSE', n: 'Haus', c: 450000, r: 2500 },
-            { id: 'VILLA', n: 'Villa', c: 2000000, r: 15000 }
-        ];
-        const AUCTION_ITEMS = [
-            { n: 'Goldene Uhr', v: 10000 },
-            { n: 'Sportwagen', v: 85000 },
-            { n: 'Diamant', v: 150000 },
-            { n: 'Yacht', v: 5000000 }
+            { id: 'GARAGE', n: 'Kleine Garage', c: 50000, r: 200, img: 'https://images.unsplash.com/photo-1517524206127-48bbd363f3d7?w=400' },
+            { id: 'KIOSK', n: 'Kiosk', c: 120000, r: 600, img: 'https://images.unsplash.com/photo-1556740738-b6a63e27c4df?w=400' },
+            { id: 'APT', n: 'Appartement', c: 250000, r: 1200, img: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400' },
+            { id: 'HOUSE', n: 'Haus', c: 500000, r: 3000, img: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=400' },
+            { id: 'VILLA', n: 'Villa', c: 2000000, r: 15000, img: 'https://images.unsplash.com/photo-1613490493576-2f5027600ebf?w=400' }
         ];
 
-        // --- APP CONTROLLER ---
+        const AUCTION_ITEMS = [{n:'Rolex',v:10000}, {n:'Porsche',v:120000}, {n:'Goldbarren',v:55000}, {n:'Yacht',v:5000000}];
+
+        // --- APP ---
         const App = {
-            db: null,
-            user: null,
-            useCloud: false,
-            data: { cash: 50000, stocks: {}, estates: [], banned: false },
-            market: {},
-            chart: null,
-            selStock: null,
-            auction: { active: false, item: null, bid: 0, end: 0, bidder: null },
+            db: null, user: null, useCloud: false, appId: 'default',
+            state: { cash: 50000, stocks: {}, estates: [], watchlist: [], banned: false },
+            market: {}, // { id: { price: 100, lastUpdate: ts } }
+            chart: null, selStock: null,
+            auction: { item: null, bid: 0, bidder: null, end: 0 },
+            adminSelUser: null,
 
-            // --- INIT ---
             async init() {
-                this.log("Starte System...");
-                this.prog(20);
-
                 try {
-                    const app = initializeApp(CONFIG);
-                    const auth = getAuth(app);
-                    this.db = getFirestore(app);
-                    this.log("Verbinde zu Firebase...");
-                    await signInAnonymously(auth);
-                    this.useCloud = true;
-                    this.prog(60);
-                    this.log("Cloud verbunden.");
-                } catch (e) {
-                    console.warn("Cloud Error", e);
-                    this.log("Cloud Fehler - Starte Offline Modus.");
-                    this.useCloud = false;
-                }
-
-                // Init Market Memory
+                    const cfg = JSON.parse(new URLSearchParams(window.location.search).get('__firebase_config')||'{}');
+                    this.appId = new URLSearchParams(window.location.search).get('__app_id')||'default';
+                    if(cfg.apiKey) {
+                        const app = initializeApp(cfg);
+                        const auth = getAuth(app);
+                        this.db = getFirestore(app);
+                        await signInAnonymously(auth);
+                        this.useCloud = true;
+                    }
+                } catch(e) { console.log("Offline"); }
+                
+                // Init local market cache
                 STOCKS.forEach(s => this.market[s.id] = { p: s.p, h: Array(20).fill(s.p) });
                 
-                this.prog(100);
-                setTimeout(() => {
-                    document.getElementById('loader').classList.add('hidden');
-                    document.getElementById('view-auth').classList.remove('hidden');
-                }, 800);
-
-                // Ticker
                 setInterval(() => this.tick(), 1000);
-                
-                // Cloud Listeners
-                if (this.useCloud) this.startListeners();
             },
 
-            // --- AUTH ---
-            auth: {
-                async login() {
-                    const n = document.getElementById('login-user').value.trim().toLowerCase();
-                    const c = document.getElementById('login-pass').value.trim();
-                    const msg = document.getElementById('auth-msg');
+            async login() {
+                const n = document.getElementById('login-name').value.trim().toLowerCase();
+                const c = document.getElementById('login-code').value.trim();
+                const err = document.getElementById('login-status');
 
-                    if (!USERS[n]) return msg.innerText = "Benutzer nicht gefunden.";
-                    if (USERS[n] !== c) return msg.innerText = "Falscher Code.";
+                if (!USERS[n]) return err.innerText = "Name unbekannt.";
+                if (USERS[n] !== c) return err.innerText = "Code falsch.";
 
-                    App.user = n;
-                    msg.innerText = "Lade Profil...";
+                this.user = n;
+                
+                // UI Switch
+                document.getElementById('auth-screen').classList.add('hidden');
+                document.getElementById('app-container').classList.remove('hidden');
+                document.getElementById('nav-id').innerText = n.toUpperCase();
+                document.getElementById('dash-user').innerText = n.toUpperCase();
+                
+                if (n === 'kayden') document.getElementById('btn-admin').classList.remove('hidden');
 
-                    // Load Data
-                    if (App.useCloud) {
-                        const ref = doc(App.db, 'artifacts', 'default', 'public', 'data', 'users', n);
-                        try {
-                            const snap = await getDoc(ref);
-                            if (snap.exists()) {
-                                const d = snap.data();
-                                if (d.banned) return msg.innerText = "Konto gesperrt.";
-                                App.data = d;
-                            } else {
-                                await setDoc(ref, App.data);
-                            }
-                        } catch(e) { console.log(e); } // Fallback to default
+                // Load Data
+                if(this.useCloud) {
+                    const ref = doc(this.db, 'artifacts', this.appId, 'public', 'data', 'users', n);
+                    const snap = await getDoc(ref);
+                    if(snap.exists()) {
+                        const d = snap.data();
+                        if(d.banned) { alert("GEBANNT"); location.reload(); return; }
+                        this.state = { ...this.state, ...d };
                     } else {
-                        const s = localStorage.getItem('ts_' + n);
-                        if (s) App.data = JSON.parse(s);
+                        await setDoc(ref, this.state);
                     }
+                    
+                    // Add to directory for admin
+                    const dirRef = doc(this.db, 'artifacts', this.appId, 'public', 'data', 'meta', 'directory');
+                    const dirSnap = await getDoc(dirRef);
+                    let list = dirSnap.exists() ? dirSnap.data().list : [];
+                    if(!list.includes(n)) { list.push(n); setDoc(dirRef, {list}); }
 
-                    document.getElementById('view-auth').classList.add('hidden');
-                    document.getElementById('view-main').classList.remove('hidden');
-                    
-                    // Admin Check
-                    if (n === 'kayden') document.getElementById('nav-admin').classList.remove('hidden');
-                    
-                    App.ui.update();
-                    App.ui.nav('dashboard');
+                    // Listeners
+                    this.syncMarket();
+                    onSnapshot(doc(this.db, 'artifacts', this.appId, 'public', 'data', 'auction', 'active'), s => {
+                        if(s.exists()) { this.auction = s.data(); if(this.view==='auctions') this.renderAuction(); }
+                    });
+                } else {
+                    const s = localStorage.getItem('ts_'+n);
+                    if(s) this.state = JSON.parse(s);
                 }
+
+                this.nav('dashboard');
+                this.updateUI();
             },
 
-            // --- CORE LOOP ---
             tick() {
-                if (!this.user) return;
+                if(!this.user) return;
+                
+                // Market Time Check (Hourly Sync Logic)
+                const now = Date.now();
+                // For visual effect, interpolate locally between updates?
+                // Request simplified: update once an hour.
+                // We assume cloud data is the truth. If offline, just hold prices.
 
-                // 1. Market Simulation (Local Interpolation or Fallback)
-                STOCKS.forEach(s => {
-                    const m = this.market[s.id];
-                    m.p = Math.max(1, m.p * (1 + (Math.random() - 0.5) * 0.05));
-                    m.h.push(m.p); if (m.h.length > 20) m.h.shift();
-                });
-                if (App.ui.currentView === 'stocks') App.stocks.render();
-
-                // 2. Auctions (Offline Sim)
-                if (!this.useCloud) {
-                    if (Date.now() > this.auction.end + 5000) {
-                        const i = AUCTION_ITEMS[Math.floor(Math.random() * AUCTION_ITEMS.length)];
-                        this.auction = { item: i.n, bid: i.v * 0.5, end: Date.now() + 30000, bidder: "System" };
-                    } else if (Date.now() < this.auction.end && Math.random() < 0.2 && this.auction.bidder !== 'Du') {
-                        this.auction.bid *= 1.1;
-                        this.auction.bidder = "Bot";
+                // Auction Check (Offline Sim)
+                if(!this.useCloud && this.view === 'auctions') {
+                    if(now > this.auction.end + 5000) {
+                        const i = AUCTION_ITEMS[Math.floor(Math.random()*AUCTION_ITEMS.length)];
+                        this.auction = { item: i.n, bid: i.v*0.5, end: now+60000, bidder:'System' };
                     }
-                    if (App.ui.currentView === 'auctions') App.auctions.render();
+                    this.renderAuction();
                 }
 
-                // 3. Save
-                if (Math.random() < 0.2) this.save(); // Save occasionally
-                
-                this.ui.update();
+                this.save();
+                this.updateUI();
             },
 
             save() {
-                if (this.useCloud && this.user) {
-                    setDoc(doc(this.db, 'artifacts', 'default', 'public', 'data', 'users', this.user), this.data).catch(()=>{});
-                }
-                localStorage.setItem('ts_' + this.user, JSON.stringify(this.data));
+                if(this.useCloud) setDoc(doc(this.db, 'artifacts', this.appId, 'public', 'data', 'users', this.user), this.state);
+                localStorage.setItem('ts_'+this.user, JSON.stringify(this.state));
             },
 
-            startListeners() {
-                // Market Listener
-                onSnapshot(doc(this.db, 'artifacts', 'default', 'public', 'data', 'market', 'global'), s => {
-                    if (s.exists()) {
-                        const d = s.data();
-                        STOCKS.forEach(def => { if (d[def.id]) this.market[def.id].p = d[def.id]; });
+            // --- MARKET SYNC ---
+            async syncMarket() {
+                const ref = doc(this.db, 'artifacts', this.appId, 'public', 'data', 'market', 'global');
+                onSnapshot(ref, async (s) => {
+                    const now = Date.now();
+                    let data = s.exists() ? s.data() : null;
+                    
+                    // Update Logic: Once per hour (3600000ms)
+                    // For testing changed to 60s
+                    if(!data || now - data.updated > 60000) {
+                        // I am the updater
+                        const newStocks = {};
+                        STOCKS.forEach(def => {
+                            const old = data?.stocks?.[def.id] || def.p;
+                            // Random walk
+                            newStocks[def.id] = Math.max(1, old * (1 + (Math.random()-0.5)*0.1)); 
+                        });
+                        data = { stocks: newStocks, updated: now };
+                        await setDoc(ref, data);
                     }
+                    
+                    // Apply to local
+                    Object.keys(data.stocks).forEach(k => {
+                        const p = data.stocks[k];
+                        const m = this.market[k];
+                        if(m) { m.p = p; m.h.push(p); if(m.h.length>20) m.h.shift(); }
+                    });
+                    
+                    // Update Timer UI
+                    const next = 60 - Math.floor((now - data.updated)/1000);
+                    document.getElementById('market-timer').innerText = next > 0 ? next+"s" : "Sync...";
+                    
+                    if(this.view === 'stocks') this.renderStocks();
                 });
-                // Auction Listener
-                onSnapshot(doc(this.db, 'artifacts', 'default', 'public', 'data', 'auction', 'active'), s => {
-                    if (s.exists()) {
-                        this.auction = s.data();
-                        if (App.ui.currentView === 'auctions') App.auctions.render();
-                    }
+            },
+
+            // --- NAVIGATION ---
+            nav(v) {
+                this.view = v;
+                document.querySelectorAll('.view-section').forEach(e=>e.classList.add('hidden-view'));
+                const el = document.getElementById('view-'+v);
+                if(el) el.classList.remove('hidden-view');
+                if(v==='stocks') this.renderStocks();
+                if(v==='realestate') this.renderEstates();
+                if(v==='auctions') this.renderAuction();
+            },
+
+            // --- STOCKS ---
+            renderStocks() {
+                const l = document.getElementById('stock-list'); l.innerHTML='';
+                
+                // Sort watchlist first
+                const sorted = [...STOCKS].sort((a,b) => {
+                    const wa = this.state.watchlist.includes(a.id);
+                    const wb = this.state.watchlist.includes(b.id);
+                    return wb - wa;
                 });
-            },
 
-            // --- MODULES ---
-            ui: {
-                currentView: 'dashboard',
-                nav(id) {
-                    this.currentView = id;
-                    document.querySelectorAll('.page-section').forEach(e => e.classList.add('hidden'));
-                    document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
-                    
-                    const p = document.getElementById('page-' + id);
-                    if (p) p.classList.remove('hidden');
-                    
-                    const n = document.getElementById('nav-' + id);
-                    if (n) n.classList.add('active');
-
-                    if (id === 'stocks') App.stocks.render();
-                    if (id === 'realestate') App.realestate.render();
-                    if (id === 'auctions') App.auctions.render();
-                    if (id === 'admin') App.admin.init();
-                },
-                update() {
-                    document.getElementById('nav-cash').innerText = App.fmt(App.data.cash);
-                    document.getElementById('wallet-cash').innerText = App.fmt(App.data.cash);
-                    document.getElementById('wallet-id').innerText = App.user ? App.user.toUpperCase() : '-';
-                    document.getElementById('dash-props').innerText = App.data.estates.length;
-                    
-                    // Dashboard Auction Preview
-                    const left = Math.max(0, Math.ceil((App.auction.end - Date.now()) / 1000));
-                    document.getElementById('dash-auc-status').innerText = left > 0 ? "LAUFEND" : "BEENDET";
-                    document.getElementById('dash-auc-timer').innerText = left + "s";
-                }
-            },
-
-            stocks: {
-                render() {
-                    const l = document.getElementById('stock-list');
-                    l.innerHTML = '';
-                    STOCKS.forEach(s => {
-                        const p = App.market[s.id].p;
-                        l.innerHTML += `
-                        <div onclick="App.stocks.select('${s.id}')" class="p-3 rounded bg-slate-800/50 mb-2 cursor-pointer hover:bg-slate-700 flex justify-between items-center ${App.selStock===s.id?'border border-sky-500':''}">
-                            <div><div class="font-bold text-white text-sm">${s.n}</div><div class="text-[10px] text-slate-400">${s.id}</div></div>
-                            <div class="font-mono text-sky-400">${App.fmt(p)}</div>
-                        </div>`;
-                    });
-
-                    if (!App.selStock) App.stocks.select(STOCKS[0].id);
-                    else App.stocks.updateChart();
-                },
-                select(id) {
-                    App.selStock = id;
-                    const def = STOCKS.find(s => s.id === id);
-                    document.getElementById('chart-title').innerText = def.n;
-                    
-                    if (App.chart) App.chart.destroy();
-                    const ctx = document.getElementById('stockChart').getContext('2d');
-                    App.chart = new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: Array(20).fill(''),
-                            datasets: [{
-                                data: App.market[id].h,
-                                borderColor: '#06b6d4',
-                                borderWidth: 2,
-                                pointRadius: 0,
-                                tension: 0.4,
-                                backgroundColor: 'rgba(6, 182, 212, 0.1)',
-                                fill: true
-                            }]
-                        },
-                        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: false }, scales: { x: { display: false }, y: { grid: { color: '#334155' } } } }
-                    });
-                    this.render();
-                },
-                updateChart() {
-                    if (App.chart && App.selStock) {
-                        const m = App.market[App.selStock];
-                        document.getElementById('chart-price').innerText = App.fmt(m.p);
-                        App.chart.data.datasets[0].data = m.h;
-                        App.chart.update('none');
-                    }
-                },
-                trade(type) {
-                    if (!App.selStock) return;
-                    const p = App.market[App.selStock].p;
-                    const q = prompt("Menge?");
-                    if (q > 0) {
-                        if (type === 'buy') {
-                            if (App.data.cash >= p * q) {
-                                App.data.cash -= p * q;
-                                if (!App.data.stocks[App.selStock]) App.data.stocks[App.selStock] = 0;
-                                App.data.stocks[App.selStock] += parseInt(q);
-                                App.toast("Kauf", "Erfolgreich");
-                            } else App.toast("Fehler", "Zu wenig Geld");
-                        } else {
-                            if (App.data.stocks[App.selStock] >= q) {
-                                App.data.cash += p * q;
-                                App.data.stocks[App.selStock] -= parseInt(q);
-                                App.toast("Verkauf", "Erfolgreich");
-                            } else App.toast("Fehler", "Keine Aktien");
-                        }
-                        App.ui.update();
-                    }
-                }
-            },
-
-            realestate: {
-                render() {
-                    const l = document.getElementById('estate-list');
-                    l.innerHTML = '';
-                    ESTATES.forEach((e, i) => {
-                        const owned = App.data.estates.find(x => x.id === e.id);
-                        l.innerHTML += `
-                        <div class="glass-panel p-4 rounded-xl text-center border-t border-amber-500/50">
-                            <h3 class="font-bold text-white">${e.n}</h3>
-                            <div class="text-xs text-slate-400 my-2">Preis: ${App.fmt(e.c)}</div>
-                            <div class="text-xs text-emerald-400 mb-4">+${App.fmt(e.r)} / Tag</div>
-                            ${owned ? 
-                                `<div class="bg-emerald-900/30 text-emerald-400 py-2 rounded text-xs font-bold border border-emerald-500/20">IM BESITZ ${owned.tenant?'(VERMIETET)':''}</div>
-                                 ${!owned.tenant ? `<button onclick="App.realestate.findTenant(${i})" class="mt-2 w-full bg-slate-700 text-xs py-1 rounded hover:bg-slate-600">Mieter suchen</button>` : ''}` 
-                                : 
-                                `<button onclick="App.realestate.buy(${i})" class="btn w-full text-xs">KAUFEN</button>`
-                            }
-                        </div>`;
-                    });
-                },
-                buy(i) {
-                    const e = ESTATES[i];
-                    if(App.data.cash >= e.c) {
-                        App.data.cash -= e.c;
-                        App.data.estates.push({id:e.id, tenant:false});
-                        App.toast("Immobilie", "Gekauft!");
-                        this.render();
-                    } else App.toast("Fehler", "Geld fehlt");
-                },
-                findTenant(i) {
-                    const def = ESTATES[i];
-                    const est = App.data.estates.find(x => x.id === def.id);
-                    App.toast("Suche...", "Anzeige geschaltet");
-                    setTimeout(() => {
-                        if(Math.random() > 0.3) { est.tenant = true; App.toast("Erfolg", "Mieter gefunden!"); }
-                        else App.toast("Fehlschlag", "Kein Interesse.");
-                        App.realestate.render();
-                    }, 1500);
-                }
-            },
-
-            auctions: {
-                render() {
-                    const a = App.auction;
-                    document.getElementById('auc-item').innerText = a.item;
-                    document.getElementById('auc-price').innerText = App.fmt(a.bid);
-                    document.getElementById('auc-bidder').innerText = a.bidder || 'Keiner';
-                    const left = Math.max(0, Math.ceil((a.end - Date.now())/1000));
-                    document.getElementById('auc-bar').style.width = (left/30)*100 + "%";
-                },
-                bid() {
-                    const next = Math.ceil(App.auction.bid * 1.05);
-                    if(App.data.cash >= next) {
-                        App.data.cash -= next;
-                        if(App.useCloud) {
-                            updateDoc(doc(App.db, 'artifacts', 'default', 'public', 'data', 'auction', 'active'), { bid:next, bidder:App.user, end: Date.now()+30000 }).catch(()=>{});
-                        } else {
-                            App.auction.bid = next; App.auction.bidder = "Du"; App.auction.end += 5000;
-                        }
-                    } else App.toast("Fehler", "Zu wenig Geld");
-                }
-            },
-
-            admin: {
-                init() {
-                    if(App.user !== 'kayden') return;
-                    this.renderUsers();
-                    this.renderStocks();
-                },
-                renderUsers() {
-                    const l = document.getElementById('admin-user-list');
-                    l.innerHTML = Object.keys(USERS).map(u => 
-                        `<div class="flex justify-between bg-slate-800 p-2 rounded mb-1 text-xs items-center">
-                            <span class="text-white font-bold uppercase">${u}</span>
-                            <div>
-                                <button onclick="App.admin.gift('${u}')" class="text-emerald-400 hover:text-white mr-2">+Geld</button>
-                                <button onclick="App.admin.ban('${u}')" class="text-rose-500 hover:text-white">BAN</button>
+                sorted.forEach(s => {
+                    const m = this.market[s.id];
+                    const w = this.state.watchlist.includes(s.id);
+                    l.innerHTML += `
+                    <div class="flex justify-between items-center p-3 rounded bg-slate-800/40 border border-slate-700 hover:border-cyan-500 cursor-pointer ${this.selStock===s.id?'border-cyan-500 bg-slate-800':''}" onclick="App.selectStock('${s.id}')">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                ${w ? '<i class="fa-solid fa-star text-yellow-400 text-[10px]"></i>' : ''}
+                                <span class="font-bold text-white text-sm">${s.n}</span>
                             </div>
-                        </div>`
-                    ).join('');
+                            <span class="text-[10px] text-slate-500">${s.id}</span>
+                        </div>
+                        <span class="font-mono text-cyan-400">${this.fmt(m.p)}</span>
+                    </div>`;
+                });
+                if(!this.selStock) this.selectStock(STOCKS[0].id);
+                
+                // Portfolio
+                const p = document.getElementById('portfolio-list'); p.innerHTML='';
+                Object.keys(this.state.stocks).forEach(k => {
+                    const q = this.state.stocks[k];
+                    if(q>0) p.innerHTML += `<div class="bg-slate-900 p-2 rounded text-center"><div class="text-xs text-slate-500">${k}</div><div class="text-white font-bold">${q}</div></div>`;
+                });
+            },
+            selectStock(id) {
+                this.selStock = id;
+                const def = STOCKS.find(s=>s.id===id);
+                document.getElementById('chart-title').innerText = def.n;
+                document.getElementById('chart-sym').innerText = id;
+                document.getElementById('chart-price').innerText = this.fmt(this.market[id].p);
+                
+                // Watchlist button
+                const w = this.state.watchlist.includes(id);
+                const btn = document.getElementById('fav-btn');
+                btn.innerHTML = w ? '<i class="fa-solid fa-star"></i> Gemerkt' : '<i class="fa-regular fa-star"></i> Merken';
+                btn.className = w ? 'text-yellow-400 text-xs mt-2' : 'text-slate-500 hover:text-white text-xs mt-2';
+
+                // Chart
+                const ctx = document.getElementById('stockChart').getContext('2d');
+                if(this.chart) this.chart.destroy();
+                this.chart = new Chart(ctx, {
+                    type:'line',
+                    data: { labels:Array(20).fill(''), datasets:[{data:this.market[id].h, borderColor:'#06b6d4', tension:0.3, pointRadius:0}] },
+                    options: { responsive:true, maintainAspectRatio:false, plugins:{legend:false}, scales:{x:{display:false}, y:{grid:{color:'#1e293b'}}} }
+                });
+                this.renderStocks(); // refresh list highlight
+            },
+            tradeStock(type) {
+                if(!this.selStock) return;
+                const p = this.market[this.selStock].p;
+                const q = parseInt(prompt("Menge?"));
+                if(q>0) {
+                    if(type==='buy' && this.state.cash >= p*q) {
+                        this.state.cash -= p*q;
+                        if(!this.state.stocks[this.selStock]) this.state.stocks[this.selStock]=0;
+                        this.state.stocks[this.selStock] += q;
+                        this.toast("Kauf", "Erfolgreich");
+                    } else if(type==='sell' && this.state.stocks[this.selStock]>=q) {
+                        this.state.cash += p*q;
+                        this.state.stocks[this.selStock] -= q;
+                        this.toast("Verkauf", "Erfolgreich");
+                    } else this.toast("Fehler", "Nicht möglich");
+                    this.updateUI(); this.renderStocks();
+                }
+            },
+            toggleFav() {
+                const i = this.state.watchlist.indexOf(this.selStock);
+                if(i>-1) this.state.watchlist.splice(i,1);
+                else this.state.watchlist.push(this.selStock);
+                this.selectStock(this.selStock);
+            },
+            toggleWatchlist() {
+                // Just refreshes list, logic handles sort
+                this.renderStocks();
+            },
+
+            // --- REAL ESTATE ---
+            renderEstates() {
+                const l = document.getElementById('estate-list'); l.innerHTML='';
+                ESTATES.forEach((e,i) => {
+                    const own = this.state.estates.find(x=>x.id===e.id);
+                    l.innerHTML += `
+                    <div class="glass-card rounded-xl overflow-hidden relative h-64 group">
+                        <img src="${e.img}" class="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:opacity-70 transition">
+                        <div class="absolute bottom-0 left-0 w-full p-4 bg-gradient-to-t from-black to-transparent">
+                            <h3 class="font-bold text-white text-lg">${e.n}</h3>
+                            <div class="flex justify-between items-end mt-2">
+                                <div class="text-xs text-slate-300">${this.fmt(e.c)}<br>+${this.fmt(e.r)}/Tag</div>
+                                ${own ? 
+                                    `<div class="text-emerald-400 text-xs font-bold bg-black/50 px-2 py-1 rounded border border-emerald-500/50">${own.tenant?'VERMIETET':'LEER'}</div>${!own.tenant?`<button onclick="App.findTenant('${e.id}')" class="bg-slate-700 text-xs px-2 py-1 rounded ml-1">Suchen</button>`:''}` 
+                                    : `<button onclick="App.buyEstate(${i})" class="bg-cyan-600 hover:bg-cyan-500 text-white text-xs px-3 py-1 rounded font-bold">KAUFEN</button>`
+                                }
+                            </div>
+                        </div>
+                    </div>`;
+                });
+            },
+            buyEstate(i) {
+                const e = ESTATES[i];
+                if(this.state.cash >= e.c) {
+                    this.state.cash -= e.c;
+                    this.state.estates.push({id:e.id, tenant:false});
+                    this.toast("Immobilie", "Erworben!");
+                    this.renderEstates(); this.updateUI();
+                } else this.toast("Fehler", "Zu wenig Geld");
+            },
+            findTenant(id) {
+                this.toast("Suche...", "Anzeige geschaltet");
+                setTimeout(() => {
+                    const est = this.state.estates.find(x=>x.id===id);
+                    if(Math.random()>0.3) { est.tenant=true; this.toast("Erfolg", "Mieter gefunden!"); }
+                    else this.toast("Fehlschlag", "Kein Interesse");
+                    this.renderEstates();
+                }, 2000);
+            },
+
+            // --- AUCTIONS ---
+            renderAuction() {
+                const a = this.auction;
+                const left = Math.max(0, Math.ceil((a.end - Date.now())/1000));
+                document.getElementById('auc-item').innerText = a.item;
+                document.getElementById('auc-price').innerText = this.fmt(a.bid);
+                document.getElementById('auc-bidder').innerText = a.bidder || 'Keiner';
+                document.getElementById('auc-timer').innerText = left+"s";
+                document.getElementById('auc-bar').style.width = (left/30)*100 + "%";
+            },
+            systems: {
+                auctions: {
+                    bid() {
+                        const next = Math.ceil(App.auction.bid * 1.05);
+                        if(App.state.cash >= next) {
+                            App.state.cash -= next;
+                            if(App.useCloud) updateDoc(doc(App.db, 'artifacts', App.appId, 'public', 'data', 'auction', 'active'), { bid:next, bidder:App.user, end: Date.now()+30000 });
+                            else { App.auction.bid=next; App.auction.bidder='Du'; App.auction.end+=5000; }
+                            App.updateUI();
+                        } else App.toast("Fehler", "Zu wenig Geld");
+                    }
+                }
+            },
+
+            // --- ADMIN ---
+            admin: {
+                open() {
+                    document.getElementById('admin-panel').classList.remove('hidden');
+                    this.loadUsers();
+                    this.loadStocks();
                 },
-                renderStocks() {
+                async loadUsers() {
+                    const l = document.getElementById('admin-user-list');
+                    l.innerHTML = 'Lade...';
+                    if(!App.useCloud) return l.innerHTML = "Offline Modus - Keine Daten.";
+                    
+                    // Fetch directory
+                    const dirSnap = await getDoc(doc(App.db, 'artifacts', App.appId, 'public', 'data', 'meta', 'directory'));
+                    const users = dirSnap.exists() ? dirSnap.data().list : Object.keys(USERS);
+                    
+                    l.innerHTML = '';
+                    users.forEach(u => {
+                        l.innerHTML += `<div class="flex justify-between bg-slate-800 p-2 rounded mb-1 items-center">
+                            <span class="text-white uppercase font-bold text-xs">${u}</span>
+                            <button onclick="App.admin.select('${u}')" class="text-cyan-400 text-xs hover:text-white">Bearbeiten</button>
+                        </div>`;
+                    });
+                },
+                loadStocks() {
                     const l = document.getElementById('admin-stock-control');
-                    l.innerHTML = STOCKS.map(s => 
-                        `<div class="flex justify-between bg-slate-800 p-2 rounded mb-1 text-xs items-center">
-                            <span class="text-white">${s.n}</span>
-                            <button onclick="App.admin.setStock('${s.id}')" class="text-cyan-400 hover:text-white">Set Preis</button>
-                        </div>`
-                    ).join('');
+                    l.innerHTML = STOCKS.map(s => `<div class="flex justify-between bg-slate-800 p-2 rounded mb-1 text-xs items-center"><span>${s.n}</span><button onclick="App.admin.setStock('${s.id}')" class="text-cyan-400">Set Price</button></div>`).join('');
                 },
-                async gift(u) {
-                    if(!App.useCloud) return alert("Nur Online");
-                    const ref = doc(App.db, 'artifacts', 'default', 'public', 'data', 'users', u);
-                    const s = await getDoc(ref);
+                async select(u) {
+                    App.adminSelUser = u;
+                    document.getElementById('admin-user-detail').classList.remove('hidden');
+                    document.getElementById('admin-placeholder').classList.add('hidden');
+                    document.getElementById('adm-sel-user').innerText = u.toUpperCase();
+                    
+                    // Fetch live data
+                    const s = await getDoc(doc(App.db, 'artifacts', App.appId, 'public', 'data', 'users', u));
                     if(s.exists()) {
-                        const d = s.data(); d.cash += 100000; await setDoc(ref, d);
-                        alert("Gesendet");
+                        const d = s.data();
+                        document.getElementById('adm-user-cash').innerText = App.fmt(d.cash);
+                        document.getElementById('adm-user-net').innerText = App.fmt(d.cash); // Simplified
                     }
                 },
-                async ban(u) {
-                    if(confirm("Bannen?") && App.useCloud) {
-                        await updateDoc(doc(App.db, 'artifacts', 'default', 'public', 'data', 'users', u), { banned: true });
+                async setCash() {
+                    const v = parseInt(document.getElementById('adm-new-cash').value);
+                    if(v && App.adminSelUser) {
+                        const ref = doc(App.db, 'artifacts', App.appId, 'public', 'data', 'users', App.adminSelUser);
+                        await updateDoc(ref, { cash: v });
+                        App.toast("Admin", "Geld gesetzt.");
+                        this.select(App.adminSelUser);
+                    }
+                },
+                async banUser() {
+                    if(confirm("Bannen?") && App.adminSelUser) {
+                        await updateDoc(doc(App.db, 'artifacts', App.appId, 'public', 'data', 'users', App.adminSelUser), { banned: true });
                     }
                 },
                 async setStock(id) {
-                    const p = prompt("Preis?");
-                    if(p && App.useCloud) await updateDoc(doc(App.db, 'artifacts', 'default', 'public', 'data', 'market', 'global'), { [id]: parseFloat(p) });
+                    const p = prompt("Preis:");
+                    if(p) await updateDoc(doc(App.db, 'artifacts', App.appId, 'public', 'data', 'market', 'global'), { [id]: parseFloat(p) });
                 }
             },
 
-            // --- HELPER ---
-            log(msg) { document.getElementById('log').innerText = msg; },
-            prog(pct) { document.getElementById('loader-fill').style.width = pct + '%'; },
+            // --- UTILS ---
             fmt(n) { return new Intl.NumberFormat('de-DE', {style:'currency', currency:'EUR'}).format(n); },
+            updateUI() { document.getElementById('nav-cash').innerText = this.fmt(this.state.cash); document.getElementById('nav-networth').innerText = this.fmt(this.state.cash); },
             toast(t, m, type='info') {
                 const el = document.createElement('div');
-                el.className = `bg-slate-800 border-l-4 ${type==='error'?'border-rose-500':'border-sky-500'} text-white px-4 py-3 rounded shadow-lg fade-in pointer-events-auto`;
+                el.className = `bg-slate-900 border-l-4 ${type==='error'?'border-red-500':'border-cyan-500'} px-4 py-3 rounded shadow-lg animate-fade-in pointer-events-auto mb-2`;
                 el.innerHTML = `<b>${t}</b> ${m}`;
                 document.getElementById('toast-container').appendChild(el);
                 setTimeout(()=>el.remove(), 3000);
